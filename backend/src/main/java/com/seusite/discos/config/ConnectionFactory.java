@@ -12,8 +12,13 @@ public class ConnectionFactory {
 
     public static Connection getConnection() {
         try {
+            // ESTA É A LINHA QUE ESTAVA FALTANDO!
+            // Ela força o Tomcat a carregar o "tradutor" do PostgreSQL
+            Class.forName("org.postgresql.Driver");
+
             return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
+
+        } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException("Erro ao conectar com PostgreSQL", e);
         }
     }
