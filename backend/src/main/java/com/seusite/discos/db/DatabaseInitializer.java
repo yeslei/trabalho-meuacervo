@@ -18,7 +18,7 @@ public class DatabaseInitializer {
                     nome VARCHAR(100) NOT NULL,
                     email VARCHAR(150) NOT NULL UNIQUE,
                     senha VARCHAR(255) NOT NULL,
-                    cpf VARCHAR(14) UNIQUE,
+                    username VARCHAR(15) UNIQUE,
                     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             """);
@@ -32,12 +32,11 @@ public class DatabaseInitializer {
                     ano_lancamento INT,
                     genero VARCHAR(100),
                     formato VARCHAR(80),
-                    gravadora VARCHAR(150),
                     imagem_capa TEXT
                 );
             """);
 
-            // 2. Criação das tabelas com dependência de Nível 1
+            // 2. Criação das tabelas com dependência de Nível 1 (Dependem de usuario e/ou disco)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS colecao (
                     id_colecao SERIAL PRIMARY KEY,
@@ -53,18 +52,17 @@ public class DatabaseInitializer {
             """);
 
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS avaliacao_disco (
-                    id_avaliacao SERIAL PRIMARY KEY,
+                CREATE TABLE IF NOT EXISTS wishlist (
                     id_usuario INT NOT NULL,
                     id_disco INT NOT NULL,
-                    nota INT CHECK (nota >= 0 AND nota <= 5),
-                    comentario TEXT,
-                    data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    CONSTRAINT fk_avaliacao_usuario
+                    data_adicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT pk_wishlist
+                        PRIMARY KEY (id_usuario, id_disco),
+                    CONSTRAINT fk_wishlist_usuario
                         FOREIGN KEY (id_usuario)
                         REFERENCES usuario(id_usuario)
                         ON DELETE CASCADE,
-                    CONSTRAINT fk_avaliacao_disco
+                    CONSTRAINT fk_wishlist_disco
                         FOREIGN KEY (id_disco)
                         REFERENCES disco(id_disco)
                         ON DELETE CASCADE
@@ -76,8 +74,8 @@ public class DatabaseInitializer {
                     id_post SERIAL PRIMARY KEY,
                     id_usuario INT NOT NULL,
                     id_disco INT NOT NULL,
-                    titulo VARCHAR(255) NOT NULL,
-                    conteudo TEXT,
+                    titulo VARCHAR(150) NOT NULL,
+                    conteudo TEXT NOT NULL,
                     data_postagem TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     CONSTRAINT fk_post_usuario
                         FOREIGN KEY (id_usuario)
@@ -90,7 +88,28 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 3. Criação das tabelas com dependência de Nível 2
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS avaliacao_disco (
+                    id_avaliacao SERIAL PRIMARY KEY,
+                    id_usuario INT NOT NULL,
+                    id_disco INT NOT NULL,
+                    nota INT NOT NULL CHECK (nota BETWEEN 1 AND 5),
+                    comentario TEXT,
+                    data_avaliacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT fk_avaliacao_usuario
+                        FOREIGN KEY (id_usuario)
+                        REFERENCES usuario(id_usuario)
+                        ON DELETE CASCADE,
+                    CONSTRAINT fk_avaliacao_disco
+                        FOREIGN KEY (id_disco)
+                        REFERENCES disco(id_disco)
+                        ON DELETE CASCADE,
+                    CONSTRAINT uk_usuario_avalia_disco
+                        UNIQUE (id_usuario, id_disco)
+                );
+            """);
+
+            // 3. Criação das tabelas com dependência de Nível 2 (Dependem de colecao ou post)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS item_colecao (
                     id_item_colecao SERIAL PRIMARY KEY,
@@ -113,30 +132,12 @@ public class DatabaseInitializer {
             """);
 
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS comentario (
-                    id_comentario SERIAL PRIMARY KEY,
-                    id_usuario INT NOT NULL,
-                    id_post INT NOT NULL,
-                    texto TEXT NOT NULL,
-                    data_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    CONSTRAINT fk_comentario_usuario
-                        FOREIGN KEY (id_usuario)
-                        REFERENCES usuario(id_usuario)
-                        ON DELETE CASCADE,
-                    CONSTRAINT fk_comentario_post
-                        FOREIGN KEY (id_post)
-                        REFERENCES post(id_post)
-                        ON DELETE CASCADE
-                );
-            """);
-
-            // Tabela associativa (N:M)
-            stmt.execute("""
                 CREATE TABLE IF NOT EXISTS curtida_post (
                     id_usuario INT NOT NULL,
                     id_post INT NOT NULL,
                     data_curtida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    PRIMARY KEY (id_usuario, id_post),
+                    CONSTRAINT pk_curtida_post
+                        PRIMARY KEY (id_usuario, id_post),
                     CONSTRAINT fk_curtida_usuario
                         FOREIGN KEY (id_usuario)
                         REFERENCES usuario(id_usuario)
