@@ -22,9 +22,12 @@ import jakarta.servlet.http.HttpSession;
         "/feed",
         "/post",
         "/criar-post",
+        "/curtir-post",
+        "/avaliar-disco",
         "/feed.jsp",
         "/postDetalhe.jsp",
-        "/novoPost.jsp"
+        "/novoPost.jsp",
+        "/avaliarDisco.jsp"
 })
 public class AuthFilter extends HttpFilter implements Filter {
 
