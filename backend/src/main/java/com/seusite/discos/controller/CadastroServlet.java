@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet("/cadastro")
-public class Cadastro extends HttpServlet {
+public class CadastroServlet extends HttpServlet {
 
     private final AuthService authService = new AuthService();
 
