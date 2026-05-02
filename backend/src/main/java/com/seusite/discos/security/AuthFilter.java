@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpSession;
         "/feed",
         "/post",
         "/criar-post",
+        "/curtir-post",
         "/avaliar-disco",
         "/feed.jsp",
         "/postDetalhe.jsp",
