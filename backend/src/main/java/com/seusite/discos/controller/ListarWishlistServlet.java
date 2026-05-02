@@ -1,0 +1,49 @@
+package com.seusite.discos.controller;
+
+import com.seusite.discos.model.Disco;
+import com.seusite.discos.model.Usuario;
+import com.seusite.discos.service.WishlistService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.List;
+
+
+
+// Servlet para listar a coleção de desejos do usuário logado
+@WebServlet("/wishlist/listar")
+public class ListarWishlistServlet extends HttpServlet {
+
+    private final WishlistService wishlistService = new WishlistService();
+
+    @Override
+    // Recebe requisições GET, verifica o usuário logado, chama o serviço para obter a wishlist e encaminha os dados para um JSP de visualização
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
+        if (usuarioLogado == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
+        try {
+            // Busca a coleção de desejos baseada na inteligência do Service/DAO
+            List<Disco> minhaWishlist = wishlistService.listarWishlistDoUsuario(usuarioLogado.getIdUsuario());
+
+            request.setAttribute("listaDesejos", minhaWishlist);
+            
+            // Repassa para a View fazer o trabalho visual
+            request.getRequestDispatcher("/wishlist.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Erro 500 elegante no lugar de uma tela branca ou stacktrace vazando
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Não foi possível carregar a sua lista de desejos no momento.");
+        }
+    }
+}
