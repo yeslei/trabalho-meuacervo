@@ -18,7 +18,13 @@ import jakarta.servlet.http.HttpSession;
         "/minhas-colecoes",
         "/colecao",
         "/criar-colecao",
-        "/adicionar-disco-colecao"
+        "/adicionar-disco-colecao",
+        "/feed",
+        "/post",
+        "/criar-post",
+        "/feed.jsp",
+        "/postDetalhe.jsp",
+        "/novoPost.jsp"
 })
 public class AuthFilter extends HttpFilter implements Filter {
 
