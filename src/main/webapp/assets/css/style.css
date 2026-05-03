@@ -1,0 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Cores extraídas do Figma */
+    --primary-accent: #EBB625;
+    --primary-text: #F8F8F8;
+    --secondary-text: #B6B8C3;
+    --primary-bg: #232325;
+    --secondary-bg: #1A1A1B;
+    --lighter-bg: #49494D;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+a {
+    text-decoration: none;
+    color: var(--primary-accent);
+    transition: opacity 0.2s;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* ================= HEADER ================= */
+.top-header {
+    background-color: var(--secondary-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--lighter-bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--primary-text);
+}
+
+.logo-icon {
+    color: var(--primary-accent);
+    font-size: 1.5rem;
+}
+
+.search-bar {
+    flex: 1;
+    max-width: 500px;
+    margin: 0 2rem;
+    position: relative;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border-radius: 8px;
+    background-color: var(--lighter-bg);
+    border: none;
+    color: var(--primary-text);
+    font-size: 0.9rem;
+}
+
+.search-bar input::placeholder {
+    color: var(--secondary-text);
+}
+
+.nav-icons {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-icons a {
+    color: var(--primary-text);
+    background-color: var(--lighter-bg);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* ================= CONTAINERS & CARDS ================= */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--lighter-bg);
+    padding-bottom: 0.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.album-card {
+    background: transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.album-card:hover {
+    transform: translateY(-5px);
+}
+
+.album-cover {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 0.8rem;
+    border: 1px solid var(--lighter-bg);
+}
+
+.album-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.2rem;
+}
+
+.album-artist {
+    font-size: 0.85rem;
+    color: var(--secondary-text);
+    margin-bottom: 0.5rem;
+}
+
+.album-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.rating-stars {
+    color: var(--primary-accent);
+}
+
+/* ================= AUTH LAYOUT (Split Screen) ================= */
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+.split-left {
+    background-color: var(--secondary-bg);
+    padding: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Simulando os anéis concêntricos do Figma */
+.split-left::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -20%;
+    transform: translateY(-50%);
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    border: 80px solid rgba(73, 73, 77, 0.05);
+    box-shadow: inset 0 0 0 80px rgba(73, 73, 77, 0.02);
+    pointer-events: none;
+}
+
+.split-right {
+    background-color: var(--primary-bg);
+    padding: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--primary-text);
+    margin-bottom: 0.4rem;
+}
+
+.form-group input {
+    padding: 0.8rem 1rem;
+    background-color: var(--lighter-bg);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--primary-text);
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-accent);
+}
+
+.btn-primary {
+    background-color: var(--primary-accent);
+    color: #000;
+    font-weight: 600;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: filter 0.2s;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.1);
+}
