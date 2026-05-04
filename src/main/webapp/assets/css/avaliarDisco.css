@@ -194,6 +194,19 @@ a {
     font-size: 13px;
 }
 
+.track-items {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.track-items li::marker {
+    color: var(--accent);
+    font-weight: 700;
+}
+
 .sidebar {
     display: flex;
     flex-direction: column;
