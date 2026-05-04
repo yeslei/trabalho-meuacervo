@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seusite.discos.model.Disco;
+import com.seusite.discos.config.ApiConfig;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -23,8 +24,8 @@ import java.util.List;
 public class DiscogsService {
 
 
-    private static final String TOKEN = "BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt"; 
-    private static final String API_URL = "https://api.discogs.com/database/search";
+    private final String apiUrl = ApiConfig.getInstance().getApiUrl();
+    private final String apiToken = ApiConfig.getInstance().getApiToken();
 
 
     /**
@@ -41,9 +42,9 @@ public class DiscogsService {
         String encodedQuery = URLEncoder.encode(termo, StandardCharsets.UTF_8);
         
         //page e per_page na URL
-        String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release" 
+        String urlCompleta = apiUrl + "/database/search?q=" + encodedQuery + "&type=release" 
                            + "&page=" + pagina + "&per_page=50" 
-                           + "&token=" + TOKEN;
+                           + "&token=" + apiToken;
 
         // faz a chamada HTTP usando o HttpClient nativo do Java 11+
         HttpClient client = HttpClient.newHttpClient();
@@ -118,4 +119,39 @@ public class DiscogsService {
         return listaDiscos;
     }
 
+    /**
+     * Busca a lista de faixas (tracklist) de um disco específico usando seu ID no Discogs
+     */
+    public List<String> buscarTracklist(int discogsId) throws Exception {
+        List<String> tracklist = new ArrayList<>();
+        
+        // Endpoint específico de releases: /releases/{id}
+        String urlCompleta = apiUrl + "/releases/" + discogsId + "?token=" + apiToken;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(urlCompleta))
+                .header("User-Agent", "MeuAcervoApp/1.0")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
+            if (jsonObject.has("tracklist") && jsonObject.get("tracklist").isJsonArray()) {
+                JsonArray jsonTracklist = jsonObject.getAsJsonArray("tracklist");
+                for (JsonElement element : jsonTracklist) {
+                    JsonObject track = element.getAsJsonObject();
+                    if (track.has("title") && !track.get("title").isJsonNull()) {
+                        tracklist.add(track.get("title").getAsString());
+                    }
+                }
+            }
+        } else {
+            throw new Exception("Erro ao consultar tracklist no Discogs. Status: " + response.statusCode());
+        }
+
+        return tracklist;
+    }
 }
