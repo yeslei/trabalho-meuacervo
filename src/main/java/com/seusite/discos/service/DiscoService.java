@@ -4,6 +4,7 @@ import com.seusite.discos.dao.DiscoDAO;
 import com.seusite.discos.model.Disco;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 public class DiscoService {
 
@@ -40,5 +41,12 @@ public class DiscoService {
         // Assume que você tem um método buscarPorId() no DiscoDAO.
         // Se ainda não tiver, é um simples SELECT * FROM disco WHERE id_disco = ?
         return discoDAO.buscarPorId(idDisco);
+    }
+
+    public Map<String, Object> obterMetricasPorDisco(int idDisco) throws SQLException {
+        if (!discoDAO.existePorId(idDisco)) {
+            return null;
+        }
+        return discoDAO.buscarMetricas(idDisco);
     }
 }
