@@ -31,8 +31,9 @@ public class VerTracklistServlet extends HttpServlet {
                 request.getRequestDispatcher("/tracklist.jsp").forward(request, response);
                 
             } catch (Exception e) {
-                request.setAttribute("erro", "Erro ao consultar as faixas: " + e.getMessage());
-                request.getRequestDispatcher("/erro.jsp").forward(request, response);
+                e.printStackTrace();
+                request.getSession().setAttribute("mensagemErro", "Erro ao consultar as faixas: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
         } else {
             // Se vier sem ID, voltamos para a raiz

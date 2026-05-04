@@ -27,6 +27,7 @@ public class ListarWishlistServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -42,8 +43,9 @@ public class ListarWishlistServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            // Erro 500 elegante no lugar de uma tela branca ou stacktrace vazando
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Não foi possível carregar a sua lista de desejos no momento.");
+            // Redirecionamento com mensagem de erro na sessão para evitar tela de erro do servidor
+            session.setAttribute("mensagemErro", "Não foi possível carregar a sua lista de desejos no momento.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }

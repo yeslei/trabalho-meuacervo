@@ -10,8 +10,8 @@ public class ApiConfig {
 
     private ApiConfig() {
         // 1. Tenta buscar primeiro nas variáveis de ambiente (Padrão 12-Factor)
-        this.apiUrl = System.getenv("https://api.discogs.com/database/search");
-        this.apiToken = System.getenv("BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt");
+        this.apiUrl = System.getenv("DISCOGS_API_URL");
+        this.apiToken = System.getenv("DISCOGS_API_TOKEN");
 
         // 2. Faz o fallback para o arquivo .properties se as variáveis de ambiente não existirem
         if (this.apiUrl == null || this.apiToken == null || this.apiUrl.isEmpty() || this.apiToken.isEmpty()) {

@@ -24,7 +24,8 @@ public class AdicionarWishlistServlet extends HttpServlet {
 
         // se não estiver logado, bloqueia a execução imediatamente
         if (usuarioLogado == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Você precisa estar logado para adicionar à wishlist.");
+            session.setAttribute("mensagemErro", "Você precisa estar logado para adicionar à wishlist.");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
@@ -58,7 +59,8 @@ public class AdicionarWishlistServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/wishlist/listar");
 
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato de número inválido nos dados do disco.");
+            session.setAttribute("mensagemErro", "Formato de número inválido nos dados do disco.");
+            response.sendRedirect(request.getContextPath() + "/busca.jsp");
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("mensagemErro", "Erro ao adicionar o disco: " + e.getMessage());

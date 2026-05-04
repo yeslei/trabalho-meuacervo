@@ -32,6 +32,7 @@ public class VerColecaoServlet extends HttpServlet {
 
         // verificação de Segurança 
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -70,7 +71,8 @@ public class VerColecaoServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao carregar sua coleção.");
+            session.setAttribute("mensagemErro", "Erro ao carregar sua coleção.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }
