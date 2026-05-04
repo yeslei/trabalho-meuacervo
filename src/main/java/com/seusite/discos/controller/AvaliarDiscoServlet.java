@@ -4,9 +4,11 @@ import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
 import com.seusite.discos.dao.DiscoDAO;
 import com.seusite.discos.service.AvaliacaoService;
+import com.seusite.discos.service.PostService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,6 +22,7 @@ public class AvaliarDiscoServlet extends HttpServlet {
 
     private final AvaliacaoService avaliacaoService = new AvaliacaoService();
     private final DiscoDAO discoDAO = new DiscoDAO();
+    private final PostService postService = new PostService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,6 +43,16 @@ public class AvaliarDiscoServlet extends HttpServlet {
             return;
         }
 
+        int pagina = 1;
+        String paginaStr = request.getParameter("pagina");
+        if (paginaStr != null && !paginaStr.isBlank()) {
+            try {
+                pagina = Integer.parseInt(paginaStr.trim());
+            } catch (NumberFormatException ignored) {
+                pagina = 1;
+            }
+        }
+
         try {
             Disco disco = discoDAO.buscarPorId(idDisco);
             if (disco == null) {
@@ -48,6 +61,18 @@ public class AvaliarDiscoServlet extends HttpServlet {
             }
             request.setAttribute("disco", disco);
             request.setAttribute("usuarioLogado", usuario);
+
+            try {
+                PostService.FeedPagina fp = postService.listarFeedPagina(pagina, idDisco);
+                request.setAttribute("posts", fp.posts());
+                request.setAttribute("paginaAtual", pagina);
+                request.setAttribute("temProxima", fp.temProxima());
+            } catch (SQLException e) {
+                request.setAttribute("posts", Collections.emptyList());
+                request.setAttribute("paginaAtual", pagina);
+                request.setAttribute("temProxima", Boolean.FALSE);
+                request.setAttribute("mensagemErroPosts", "banco");
+            }
             request.getRequestDispatcher("/avaliarDisco.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();

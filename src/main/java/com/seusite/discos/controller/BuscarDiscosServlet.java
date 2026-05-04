@@ -21,8 +21,27 @@ public class BuscarDiscosServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String termo = request.getParameter("q");
         String paginaStr = request.getParameter("page");
-        
-        int pagina = (paginaStr == null || paginaStr.isEmpty()) ? 1 : Integer.parseInt(paginaStr);
+        String erroParam = request.getParameter("erro");
+
+        String erroMsg = null;
+        if (erroParam != null && !erroParam.trim().isEmpty()) {
+            if ("disco-invalido".equals(erroParam)) {
+                erroMsg = "Disco invalido para abrir.";
+            } else if ("banco".equals(erroParam)) {
+                erroMsg = "Erro ao acessar o banco de dados.";
+            } else {
+                erroMsg = "Erro ao processar a solicitacao.";
+            }
+        }
+
+        int pagina = 1;
+        if (paginaStr != null && !paginaStr.trim().isEmpty()) {
+            try {
+                pagina = Integer.parseInt(paginaStr.trim());
+            } catch (NumberFormatException ignored) {
+                pagina = 1;
+            }
+        }
 
         if (termo != null && !termo.trim().isEmpty()) {
             try {
@@ -33,6 +52,9 @@ public class BuscarDiscosServlet extends HttpServlet {
                 request.setAttribute("discos", resultados);
                 request.setAttribute("termoBusca", termo);
                 request.setAttribute("paginaAtual", pagina);
+                if (erroMsg != null) {
+                    request.setAttribute("erro", erroMsg);
+                }
                 
                 // Redireciona para a página de resultados
                 request.getRequestDispatcher("/busca.jsp").forward(request, response);
@@ -43,7 +65,12 @@ public class BuscarDiscosServlet extends HttpServlet {
             }
         } else {
             // Se não houver busca, apenas volta para a home ou exibe vazio
-            response.sendRedirect("index.jsp");
+            if (erroMsg != null) {
+                request.setAttribute("erro", erroMsg);
+                request.getRequestDispatcher("/busca.jsp").forward(request, response);
+            } else {
+                response.sendRedirect("index.jsp");
+            }
         }
     }
 }
