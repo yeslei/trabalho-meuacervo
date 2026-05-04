@@ -27,6 +27,7 @@ public class ListarColecoesServlet extends HttpServlet {
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
 
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -49,7 +50,8 @@ public class ListarColecoesServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao carregar suas coleções.");
+            session.setAttribute("mensagemErro", "Erro ao carregar suas coleções.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }
