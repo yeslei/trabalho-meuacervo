@@ -4,6 +4,7 @@ CREATE TABLE usuario (
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     username VARCHAR(15) UNIQUE,
+    role VARCHAR(20) NOT NULL DEFAULT 'user',
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -130,4 +131,14 @@ CREATE TABLE curtida_post (
         FOREIGN KEY (id_post)
         REFERENCES post(id_post)
         ON DELETE CASCADE
+);
+CREATE TABLE faixa (
+    id_faixa SERIAL PRIMARY KEY,
+    id_disco INT NOT NULL,
+    numero VARCHAR(10),
+    titulo VARCHAR(300) NOT NULL,
+    duracao VARCHAR(10),
+    ordem INT NOT NULL,
+    CONSTRAINT fk_faixa_disco FOREIGN KEY (id_disco)
+        REFERENCES disco(id_disco) ON DELETE CASCADE
 );

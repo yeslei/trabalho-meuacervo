@@ -1,25 +1,38 @@
 package com.seusite.discos.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConnectionFactory {
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/site_discos";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "123456";
+    private static final HikariDataSource dataSource;
 
-    public static Connection getConnection() {
-        try {
-            // ESTA É A LINHA QUE ESTAVA FALTANDO!
-            // Ela força o Tomcat a carregar o "tradutor" do PostgreSQL
-            Class.forName("org.postgresql.Driver");
+    static {
+        HikariConfig config = new HikariConfig();
 
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+        // Credenciais via variáveis de ambiente; fallback para desenvolvimento local
+        String url      = System.getenv("DB_URL");
+        String user     = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASSWORD");
 
-        } catch (SQLException | ClassNotFoundException e) {
-            throw new RuntimeException("Erro ao conectar com PostgreSQL", e);
-        }
+        config.setJdbcUrl(url      != null ? url      : "jdbc:postgresql://localhost:5432/site_discos");
+        config.setUsername(user    != null ? user     : "postgres");
+        config.setPassword(password != null ? password : "123456");
+
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+        config.setConnectionTimeout(30_000);
+        config.setIdleTimeout(600_000);
+        config.setMaxLifetime(1_800_000);
+        config.setPoolName("MeuAcervoPool");
+
+        dataSource = new HikariDataSource(config);
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 }

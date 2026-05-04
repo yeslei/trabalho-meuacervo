@@ -11,6 +11,12 @@ public class DatabaseInitializer {
         try (Connection conn = ConnectionFactory.getConnection();
              Statement stmt = conn.createStatement()) {
 
+            // Reset opcional: ative com -Dmeuacervo.reset.discos=true na JVM
+            if ("true".equalsIgnoreCase(System.getProperty("meuacervo.reset.discos"))) {
+                stmt.execute("TRUNCATE TABLE disco RESTART IDENTITY CASCADE");
+                System.out.println("[MeuAcervo] Discos resetados via -Dmeuacervo.reset.discos=true");
+            }
+
             // 1. Criação das tabelas base (Sem Foreign Keys)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS usuario (
@@ -19,8 +25,21 @@ public class DatabaseInitializer {
                     email VARCHAR(150) NOT NULL UNIQUE,
                     senha VARCHAR(255) NOT NULL,
                     username VARCHAR(15) UNIQUE,
+                    role VARCHAR(20) NOT NULL DEFAULT 'user',
                     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
+            """);
+
+            // Migração: adiciona coluna role em bancos existentes sem ela
+            stmt.execute("""
+                DO $$ BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='usuario' AND column_name='role'
+                    ) THEN
+                        ALTER TABLE usuario ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user';
+                    END IF;
+                END $$;
             """);
 
             stmt.execute("""
@@ -146,6 +165,20 @@ public class DatabaseInitializer {
                         FOREIGN KEY (id_post)
                         REFERENCES post(id_post)
                         ON DELETE CASCADE
+                );
+            """);
+
+            // Tabela de faixas dos discos (populada via Discogs)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS faixa (
+                    id_faixa SERIAL PRIMARY KEY,
+                    id_disco INT NOT NULL,
+                    numero VARCHAR(10),
+                    titulo VARCHAR(300) NOT NULL,
+                    duracao VARCHAR(10),
+                    ordem INT NOT NULL,
+                    CONSTRAINT fk_faixa_disco FOREIGN KEY (id_disco)
+                        REFERENCES disco(id_disco) ON DELETE CASCADE
                 );
             """);
 
