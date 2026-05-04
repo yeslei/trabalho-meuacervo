@@ -20,7 +20,7 @@ public class PostDAO {
             """;
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setInt(1, post.getIdUsuario   
+            stmt.setInt(1, post.getIdUsuario());   
             stmt.setInt(2, post.getIdDisco());
             stmt.setString(3, post.getTitulo());
             stmt.setString(4, post.getConteudo());
