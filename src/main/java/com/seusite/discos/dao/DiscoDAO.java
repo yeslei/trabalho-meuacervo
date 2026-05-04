@@ -3,10 +3,13 @@ package com.seusite.discos.dao;
 import com.seusite.discos.config.ConnectionFactory;
 import com.seusite.discos.model.Disco;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class DiscoDAO {
 
@@ -137,5 +140,50 @@ public class DiscoDAO {
             }
         }
         throw new SQLException("Falha ao salvar disco, nenhum ID retornado.");
+    }
+
+    public Map<String, Object> buscarMetricas(int idDisco) throws SQLException {
+        String sql = """
+            SELECT
+                (SELECT COUNT(*) FROM item_colecao WHERE id_disco = ?) AS total_colecao,
+                (SELECT COUNT(*) FROM wishlist WHERE id_disco = ?) AS total_wishlist,
+                (SELECT COUNT(*) FROM avaliacao_disco WHERE id_disco = ?) AS total_avaliacoes,
+                (SELECT COALESCE(ROUND(AVG(nota)::numeric, 2), 0) FROM avaliacao_disco WHERE id_disco = ?) AS media_avaliacao
+            """;
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idDisco);
+            stmt.setInt(2, idDisco);
+            stmt.setInt(3, idDisco);
+            stmt.setInt(4, idDisco);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    int totalColecao = rs.getInt("total_colecao");
+                    int totalWishlist = rs.getInt("total_wishlist");
+                    int totalAvaliacoes = rs.getInt("total_avaliacoes");
+                    BigDecimal mediaRaw = rs.getBigDecimal("media_avaliacao");
+                    double mediaAvaliacao = mediaRaw == null ? 0.0 : mediaRaw.doubleValue();
+
+                    Map<String, Object> metricas = new LinkedHashMap<>();
+                    metricas.put("idDisco", idDisco);
+                    metricas.put("totalColecao", totalColecao);
+                    metricas.put("totalWishlist", totalWishlist);
+                    metricas.put("totalAvaliacoes", totalAvaliacoes);
+                    metricas.put("mediaAvaliacao", mediaAvaliacao);
+                    return metricas;
+                }
+            }
+        }
+
+        Map<String, Object> metricas = new LinkedHashMap<>();
+        metricas.put("idDisco", idDisco);
+        metricas.put("totalColecao", 0);
+        metricas.put("totalWishlist", 0);
+        metricas.put("totalAvaliacoes", 0);
+        metricas.put("mediaAvaliacao", 0.0);
+        return metricas;
     }
 }

@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpSession;
         "/curtir-post",
         "/avaliar-disco",
         "/buscar-discos",
+        "/disco/metricas",
         "/wishlist/adicionar",
         "/wishlist/remover",
         "/wishlist/listar",
