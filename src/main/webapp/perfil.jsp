@@ -67,7 +67,7 @@
             <div class="stat-label">Discos na Coleção</div>
         </a>
 
-        <a href="${pageContext.request.contextPath}/feed"
+        <a href="${pageContext.request.contextPath}/perfil/reviews"
            class="stat-card" style="text-decoration: none;">
             <div class="stat-icon"><i class="fa-solid fa-pen"></i></div>
             <div class="stat-numero">${totalReviews}</div>
@@ -88,7 +88,7 @@
     <nav class="tabs">
         <a href="${pageContext.request.contextPath}/colecao/ver"
            class="tab-link <c:if test='${abaAtiva == "colecao"}'>active</c:if>">Coleção</a>
-        <a href="${pageContext.request.contextPath}/feed"
+        <a href="${pageContext.request.contextPath}/perfil/reviews"
            class="tab-link <c:if test='${abaAtiva == "reviews"}'>active</c:if>">Reviews</a>
         <a href="${pageContext.request.contextPath}/wishlist/listar"
            class="tab-link <c:if test='${abaAtiva == "favoritos"}'>active</c:if>">Favoritos</a>
@@ -123,10 +123,10 @@
                     <c:otherwise>
                         <c:forEach var="item" items="${colecao}">
                             <article class="album-card"
-                                     onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${item.disco.idDisco}'">
+                                     onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${item.idDisco}'">
                                 <c:choose>
-                                    <c:when test="${not empty item.disco.imagemCapa}">
-                                        <img src="${item.disco.imagemCapa}" alt="${item.disco.titulo}" class="album-cover">
+                                    <c:when test="${not empty item.imagemCapa}">
+                                        <img src="${item.imagemCapa}" alt="${item.titulo}" class="album-cover">
                                     </c:when>
                                     <c:otherwise>
                                         <div class="album-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">
@@ -134,18 +134,12 @@
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
-                                <div class="album-title"><c:out value="${item.disco.titulo}"/></div>
-                                <div class="album-artist"><c:out value="${item.disco.artista}"/></div>
+                                <div class="album-title"><c:out value="${item.titulo}"/></div>
+                                <div class="album-artist"><c:out value="${item.artista}"/></div>
                                 <div class="album-meta">
-                                    <span class="rating-stars">
-                                        <c:forEach begin="1" end="5" var="i">
-                                            <c:choose>
-                                                <c:when test="${not empty item.nota and i <= item.nota}">★</c:when>
-                                                <c:otherwise><span class="star-empty">★</span></c:otherwise>
-                                            </c:choose>
-                                        </c:forEach>
-                                    </span>
-                                    <i class="fa-regular fa-heart heart-toggle" style="font-size: 0.9rem;"></i>
+                                    <c:if test="${not empty item.anoLancamento}">
+                                        <span style="color: var(--secondary-text);"><c:out value="${item.anoLancamento}"/></span>
+                                    </c:if>
                                 </div>
                             </article>
                         </c:forEach>

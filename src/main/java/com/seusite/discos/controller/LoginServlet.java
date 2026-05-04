@@ -36,7 +36,7 @@ public class LoginServlet extends HttpServlet {
 
                 String lembrar = request.getParameter("lembrar");
 
-                if ("true".equals(lembrar)) {
+                if (lembrar != null) {
                     Cookie cookieEmail = new Cookie("usuarioEmail", usuario.getEmail());
                     cookieEmail.setMaxAge(60 * 60 * 24 * 7);
                     cookieEmail.setPath(request.getContextPath().isEmpty() ? "/" : request.getContextPath());
@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
                     response.addCookie(cookieId);
                 }
 
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
+                response.sendRedirect(request.getContextPath() + "/home");
 
             } else {
                 response.sendRedirect(request.getContextPath() + "/login.jsp?erro=login-invalido");

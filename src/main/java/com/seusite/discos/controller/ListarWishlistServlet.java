@@ -2,6 +2,8 @@ package com.seusite.discos.controller;
 
 import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
+import com.seusite.discos.service.AvaliacaoService;
+import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.WishlistService;
 
 import jakarta.servlet.ServletException;
@@ -20,6 +22,8 @@ import java.util.List;
 public class ListarWishlistServlet extends HttpServlet {
 
     private final WishlistService wishlistService = new WishlistService();
+    private final AvaliacaoService avaliacaoService = new AvaliacaoService();
+    private final ColecaoService colecaoService = new ColecaoService();
 
     @Override
     // Recebe requisições GET, verifica o usuário logado, chama o serviço para obter a wishlist e encaminha os dados para um JSP de visualização
@@ -36,14 +40,16 @@ public class ListarWishlistServlet extends HttpServlet {
             // Busca a coleção de desejos baseada na inteligência do Service/DAO
             List<Disco> minhaWishlist = wishlistService.listarWishlistDoUsuario(usuarioLogado.getIdUsuario());
 
-            request.setAttribute("perfilUsuario", usuarioLogado);
-            request.setAttribute("abaAtual", "favoritos");
+            request.setAttribute("usuarioPerfil", usuarioLogado);
+            request.setAttribute("abaAtiva", "favoritos");
             request.setAttribute("ehProprioPerfil", Boolean.TRUE);
             request.setAttribute("favoritos", minhaWishlist);
             request.setAttribute("colecao", java.util.Collections.emptyList());
             request.setAttribute("reviews", java.util.Collections.emptyList());
-            request.setAttribute("totalDiscos", 0);
-            request.setAttribute("totalReviews", 0);
+            int totalDiscos = colecaoService.contarDiscosNaColecao(usuarioLogado.getIdUsuario());
+            int totalReviews = avaliacaoService.contarReviews(usuarioLogado.getIdUsuario());
+            request.setAttribute("totalDiscos", totalDiscos);
+            request.setAttribute("totalReviews", totalReviews);
             request.setAttribute("totalFavoritos", minhaWishlist.size());
             
             // Repassa para a View fazer o trabalho visual

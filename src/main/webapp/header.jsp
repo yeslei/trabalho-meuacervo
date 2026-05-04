@@ -1,10 +1,10 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <header class="top-header">
-    <a href="${pageContext.request.contextPath}/index.jsp" class="logo-container">
+    <a href="${pageContext.request.contextPath}/home" class="logo-container">
         <i class="fa-solid fa-record-vinyl logo-icon"></i> MeuAcervo
     </a>
 
@@ -12,21 +12,21 @@
         <form action="${pageContext.request.contextPath}/buscar-discos" method="GET">
             <i class="fa-solid fa-magnifying-glass"
                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--secondary-text);"></i>
-            <input type="text" name="q" placeholder="Procure por artistas, Ã¡lbuns e mais..." value="${param.q}">
+            <input type="text" name="q" placeholder="Procure por artistas, álbuns e mais..." value="${param.q}">
         </form>
     </div>
 
     <nav class="nav-icons">
-        <a href="${pageContext.request.contextPath}/index.jsp" title="Home">
+        <a href="${pageContext.request.contextPath}/home" title="Home">
             <i class="fa-solid fa-house"></i>
         </a>
 
         <c:choose>
             <c:when test="${not empty sessionScope.usuarioLogado}">
-                <a href="${pageContext.request.contextPath}/colecao/ver" title="Minha ColeÃ§Ã£o">
+                <a href="${pageContext.request.contextPath}/colecao/ver" title="Minha Coleção">
                     <i class="fa-solid fa-compact-disc"></i>
                 </a>
-                <a href="${pageContext.request.contextPath}/feed" title="Meus Reviews">
+                <a href="${pageContext.request.contextPath}/perfil/reviews" title="Meus Reviews">
                     <i class="fa-solid fa-pen"></i>
                 </a>
                 <a href="${pageContext.request.contextPath}/wishlist/listar" title="Favoritos">

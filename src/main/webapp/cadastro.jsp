@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -23,7 +23,7 @@
             <span style="color: var(--primary-accent);">seu acervo</span>
         </h1>
         <p style="color: var(--primary-text); font-size: 1.1rem; max-width: 400px;">
-            Registre seus discos, avalie Ã¡lbuns e acompanhe sua evoluÃ§Ã£o musical.
+            Registre seus discos, avalie álbuns e acompanhe sua evolução musical.
         </p>
     </div>
 
@@ -33,23 +33,23 @@
                       letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">Bem-vindo</p>
             <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 500;">Crie sua conta</h2>
             <p style="color: var(--secondary-text); font-size: 0.9rem; margin-bottom: 2rem;">
-                Ã‰ rÃ¡pido. Em menos de um minuto vocÃª estarÃ¡ pronto para montar seu acervo.
+                É rápido. Em menos de um minuto você estará pronto para montar seu acervo.
             </p>
 
             <c:if test="${param.erro == 'campos-vazios'}">
-                <div class="alert alert-error">Preencha todos os campos obrigatÃ³rios.</div>
+                <div class="alert alert-error">Preencha todos os campos obrigatórios.</div>
             </c:if>
             <c:if test="${param.erro == 'email-invalido'}">
-                <div class="alert alert-error">Formato de e-mail invÃ¡lido.</div>
+                <div class="alert alert-error">Formato de e-mail inválido.</div>
             </c:if>
             <c:if test="${param.erro == 'senha-curta'}">
                 <div class="alert alert-error">A senha precisa ter pelo menos 8 caracteres.</div>
             </c:if>
             <c:if test="${param.erro == 'email-existente'}">
-                <div class="alert alert-error">Este e-mail jÃ¡ estÃ¡ cadastrado. Que tal fazer login?</div>
+                <div class="alert alert-error">Este e-mail já está cadastrado. Que tal fazer login?</div>
             </c:if>
             <c:if test="${param.erro == 'username-existente'}">
-                <div class="alert alert-error">Este nome de usuÃ¡rio jÃ¡ estÃ¡ em uso.</div>
+                <div class="alert alert-error">Este nome de usuário já está em uso.</div>
             </c:if>
             <c:if test="${param.erro == 'banco'}">
                 <div class="alert alert-error">Erro ao acessar o banco. Tente novamente em instantes.</div>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="form-group">
                     <label for="username">
-                        Nome de usuÃ¡rio
+                        Nome de usuário
                         <span id="username-counter" class="char-counter">0/15</span>
                     </label>
                     <input type="text" id="username" name="username"
@@ -77,7 +77,7 @@
                     <label for="senha">Senha</label>
                     <div class="input-senha-wrapper">
                         <input type="password" id="senha" name="senha"
-                               placeholder="MÃ­nimo 8 caracteres" minlength="8">
+                               placeholder="Mínimo 8 caracteres" minlength="8">
                         <button type="button" class="btn-toggle-senha" title="Mostrar senha">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -87,7 +87,7 @@
                 <button type="submit" class="btn-primary">Criar minha conta</button>
 
                 <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--secondary-text);">
-                    JÃ¡ tem conta?
+                    Já tem conta?
                     <a href="${pageContext.request.contextPath}/login.jsp"
                        style="color: var(--primary-accent);">Entrar</a>
                 </p>

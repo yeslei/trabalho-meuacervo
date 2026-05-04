@@ -58,4 +58,14 @@ public class AvaliacaoDisco {
     public void setDataAvaliacao(LocalDateTime dataAvaliacao) {
         this.dataAvaliacao = dataAvaliacao;
     }
+
+    // campos desnormalizados: preenchidos nas queries com JOIN
+    private String username;
+    private Disco disco;
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public Disco getDisco() { return disco; }
+    public void setDisco(Disco disco) { this.disco = disco; }
 }

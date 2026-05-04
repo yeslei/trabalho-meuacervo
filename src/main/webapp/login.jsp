@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -19,11 +19,11 @@
         </a>
 
         <h1 style="font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2;">
-            Reviva seus <span style="color: var(--primary-accent);">Ã¡lbuns</span><br>
+            Reviva seus <span style="color: var(--primary-accent);">álbuns</span><br>
             favoritos.
         </h1>
         <p style="color: var(--primary-text); font-size: 1.1rem; max-width: 400px;">
-            Acompanhe sua coleÃ§Ã£o, registre momentos e descubra novos sons.
+            Acompanhe sua coleção, registre momentos e descubra novos sons.
         </p>
     </div>
 
@@ -37,7 +37,7 @@
             </p>
 
             <c:if test="${param.sucesso == 'logout'}">
-                <div class="alert alert-success">VocÃª saiu da sua conta. AtÃ© logo!</div>
+                <div class="alert alert-success">Você saiu da sua conta. Até logo!</div>
             </c:if>
             <c:if test="${param.erro == 'login-invalido'}">
                 <div class="alert alert-error">E-mail ou senha incorretos.</div>
@@ -46,7 +46,7 @@
                 <div class="alert alert-error">Preencha todos os campos.</div>
             </c:if>
             <c:if test="${param.erro == 'nao-autenticado'}">
-                <div class="alert alert-error">VocÃª precisa estar logado para acessar essa pÃ¡gina.</div>
+                <div class="alert alert-error">Você precisa estar logado para acessar essa página.</div>
             </c:if>
             <c:if test="${param.erro == 'banco'}">
                 <div class="alert alert-error">Erro ao acessar o banco. Tente novamente em instantes.</div>
@@ -61,7 +61,7 @@
                 <div class="form-group">
                     <label for="senha">Senha</label>
                     <div class="input-senha-wrapper">
-                        <input type="password" id="senha" name="senha" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+                        <input type="password" id="senha" name="senha" placeholder="••••••••">
                         <button type="button" class="btn-toggle-senha" title="Mostrar senha">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -77,7 +77,7 @@
                 <button type="submit" class="btn-primary">Entrar</button>
 
                 <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--secondary-text);">
-                    Ainda nÃ£o tem conta?
+                    Ainda não tem conta?
                     <a href="${pageContext.request.contextPath}/cadastro.jsp"
                        style="color: var(--primary-accent);">Criar conta</a>
                 </p>

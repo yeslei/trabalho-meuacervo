@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title>Home | MeuAcervo</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -14,7 +15,7 @@
 <main class="container">
 
     <h2 style="text-align: center; font-weight: 400; color: var(--secondary-text); margin-bottom: 2.5rem;">
-        E aÃ­,
+        E aí,
         <span style="color: var(--primary-text);">
             <c:choose>
                 <c:when test="${not empty sessionScope.usuarioLogado}">${sessionScope.usuarioLogado.nome}</c:when>
@@ -28,20 +29,30 @@
         <div class="alert alert-error">${mensagemErro}</div>
     </c:if>
 
-    <%-- ===== SeÃ§Ã£o 1: Mais vendidos ===== --%>
+    <%-- Macro para renderizar um card de disco (evita repetição) --%>
+
+    <%-- ===== Seção 1: Mais vendidos ===== --%>
     <h3 class="section-title">Os discos e CDs mais vendidos desta semana</h3>
     <div class="card-grid" style="margin-bottom: 2.5rem;">
         <c:choose>
             <c:when test="${empty discos}">
-                <p class="empty-state">Nenhum disco cadastrado ainda. Quando os primeiros discos forem adicionados, eles aparecerÃ£o aqui.</p>
+                <p class="empty-state">Nenhum disco disponível no momento. Tente buscar por artistas ou álbuns.</p>
             </c:when>
             <c:otherwise>
-                <c:forEach var="disco" items="${discos}" begin="0" end="5">
-                    <article class="album-card"
-                             onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${disco.idDisco}'">
+                <c:forEach var="d" items="${discos}" begin="0" end="5">
+                    <c:url var="detalheUrl" value="/disco/abrir">
+                        <c:param name="discogsId" value="${d.discogsId}"/>
+                        <c:param name="titulo"    value="${d.titulo}"/>
+                        <c:param name="artista"   value="${d.artista}"/>
+                        <c:param name="ano"       value="${d.anoLancamento}"/>
+                        <c:param name="genero"    value="${d.genero}"/>
+                        <c:param name="formato"   value="${d.formato}"/>
+                        <c:param name="capa"      value="${d.imagemCapa}"/>
+                    </c:url>
+                    <article class="album-card" onclick="window.location.href='${detalheUrl}'">
                         <c:choose>
-                            <c:when test="${not empty disco.imagemCapa}">
-                                <img src="${disco.imagemCapa}" alt="${disco.titulo}" class="album-cover">
+                            <c:when test="${not empty d.imagemCapa}">
+                                <img src="${d.imagemCapa}" alt="${d.titulo}" class="album-cover">
                             </c:when>
                             <c:otherwise>
                                 <div class="album-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">
@@ -49,11 +60,11 @@
                                 </div>
                             </c:otherwise>
                         </c:choose>
-                        <div class="album-title"><c:out value="${disco.titulo}"/></div>
-                        <div class="album-artist"><c:out value="${disco.artista}"/></div>
+                        <div class="album-title"><c:out value="${d.titulo}"/></div>
+                        <div class="album-artist"><c:out value="${d.artista}"/></div>
                         <div class="album-meta">
-                            <c:if test="${not empty disco.anoLancamento}">
-                                <span style="color: var(--secondary-text);"><c:out value="${disco.anoLancamento}"/></span>
+                            <c:if test="${not empty d.anoLancamento}">
+                                <span style="color: var(--secondary-text);"><c:out value="${d.anoLancamento}"/></span>
                             </c:if>
                         </div>
                     </article>
@@ -62,16 +73,24 @@
         </c:choose>
     </div>
 
-    <%-- ===== SeÃ§Ã£o 2: Mais desejados ===== --%>
+    <%-- ===== Seção 2: Mais desejados ===== --%>
     <c:if test="${not empty discos}">
         <h3 class="section-title">Os discos e CDs mais desejados desta semana</h3>
         <div class="card-grid" style="margin-bottom: 2.5rem;">
-            <c:forEach var="disco" items="${discos}" begin="6" end="11">
-                <article class="album-card"
-                         onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${disco.idDisco}'">
+            <c:forEach var="d" items="${discos}" begin="6" end="11">
+                <c:url var="detalheUrl" value="/disco/abrir">
+                    <c:param name="discogsId" value="${d.discogsId}"/>
+                    <c:param name="titulo"    value="${d.titulo}"/>
+                    <c:param name="artista"   value="${d.artista}"/>
+                    <c:param name="ano"       value="${d.anoLancamento}"/>
+                    <c:param name="genero"    value="${d.genero}"/>
+                    <c:param name="formato"   value="${d.formato}"/>
+                    <c:param name="capa"      value="${d.imagemCapa}"/>
+                </c:url>
+                <article class="album-card" onclick="window.location.href='${detalheUrl}'">
                     <c:choose>
-                        <c:when test="${not empty disco.imagemCapa}">
-                            <img src="${disco.imagemCapa}" alt="${disco.titulo}" class="album-cover">
+                        <c:when test="${not empty d.imagemCapa}">
+                            <img src="${d.imagemCapa}" alt="${d.titulo}" class="album-cover">
                         </c:when>
                         <c:otherwise>
                             <div class="album-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">
@@ -79,26 +98,34 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
-                    <div class="album-title"><c:out value="${disco.titulo}"/></div>
-                    <div class="album-artist"><c:out value="${disco.artista}"/></div>
+                    <div class="album-title"><c:out value="${d.titulo}"/></div>
+                    <div class="album-artist"><c:out value="${d.artista}"/></div>
                     <div class="album-meta">
-                        <c:if test="${not empty disco.anoLancamento}">
-                            <span style="color: var(--secondary-text);"><c:out value="${disco.anoLancamento}"/></span>
+                        <c:if test="${not empty d.anoLancamento}">
+                            <span style="color: var(--secondary-text);"><c:out value="${d.anoLancamento}"/></span>
                         </c:if>
                     </div>
                 </article>
             </c:forEach>
         </div>
 
-        <%-- ===== SeÃ§Ã£o 3: Mais colecionados ===== --%>
+        <%-- ===== Seção 3: Mais colecionados ===== --%>
         <h3 class="section-title">Os discos e CDs mais colecionados desta semana</h3>
         <div class="card-grid">
-            <c:forEach var="disco" items="${discos}" begin="12" end="17">
-                <article class="album-card"
-                         onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${disco.idDisco}'">
+            <c:forEach var="d" items="${discos}" begin="12" end="17">
+                <c:url var="detalheUrl" value="/disco/abrir">
+                    <c:param name="discogsId" value="${d.discogsId}"/>
+                    <c:param name="titulo"    value="${d.titulo}"/>
+                    <c:param name="artista"   value="${d.artista}"/>
+                    <c:param name="ano"       value="${d.anoLancamento}"/>
+                    <c:param name="genero"    value="${d.genero}"/>
+                    <c:param name="formato"   value="${d.formato}"/>
+                    <c:param name="capa"      value="${d.imagemCapa}"/>
+                </c:url>
+                <article class="album-card" onclick="window.location.href='${detalheUrl}'">
                     <c:choose>
-                        <c:when test="${not empty disco.imagemCapa}">
-                            <img src="${disco.imagemCapa}" alt="${disco.titulo}" class="album-cover">
+                        <c:when test="${not empty d.imagemCapa}">
+                            <img src="${d.imagemCapa}" alt="${d.titulo}" class="album-cover">
                         </c:when>
                         <c:otherwise>
                             <div class="album-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">
@@ -106,11 +133,11 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
-                    <div class="album-title"><c:out value="${disco.titulo}"/></div>
-                    <div class="album-artist"><c:out value="${disco.artista}"/></div>
+                    <div class="album-title"><c:out value="${d.titulo}"/></div>
+                    <div class="album-artist"><c:out value="${d.artista}"/></div>
                     <div class="album-meta">
-                        <c:if test="${not empty disco.anoLancamento}">
-                            <span style="color: var(--secondary-text);"><c:out value="${disco.anoLancamento}"/></span>
+                        <c:if test="${not empty d.anoLancamento}">
+                            <span style="color: var(--secondary-text);"><c:out value="${d.anoLancamento}"/></span>
                         </c:if>
                     </div>
                 </article>

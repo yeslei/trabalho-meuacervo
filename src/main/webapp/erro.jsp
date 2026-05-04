@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -15,9 +15,9 @@
 <main class="container">
     <div style="text-align: center; padding: 4rem 1rem;">
         <i class="fa-solid fa-record-vinyl" style="font-size: 5rem; color: var(--primary-accent); margin-bottom: 1.5rem;"></i>
-        <h1 style="font-size: 2rem; margin-bottom: 1rem;">Ops, algo nÃ£o deu certo</h1>
+        <h1 style="font-size: 2rem; margin-bottom: 1rem;">Ops, algo não deu certo</h1>
         <p style="color: var(--secondary-text); margin-bottom: 2rem;">
-            NÃ£o conseguimos encontrar o que vocÃª procurava. Que tal voltar para a Home?
+            Não conseguimos encontrar o que você procurava. Que tal voltar para a Home?
         </p>
         <a href="${pageContext.request.contextPath}/index.jsp" class="btn-primary"
            style="display: inline-block; max-width: 200px; text-align: center; text-decoration: none;">

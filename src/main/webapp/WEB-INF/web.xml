@@ -7,10 +7,11 @@
 
     <display-name>MeuAcervo</display-name>
 
-    <!-- Quando alguém acessa a raiz (/), redireciona para a Home com o feed populado -->
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+
     <welcome-file-list>
         <welcome-file>login.jsp</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
     <session-config>

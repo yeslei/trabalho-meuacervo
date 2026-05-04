@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seusite.discos.model.Disco;
+import com.seusite.discos.model.Faixa;
 import com.seusite.discos.config.ApiConfig;
 
 import java.net.URI;
@@ -119,14 +120,12 @@ public class DiscogsService {
     }
 
     /**
-     * Busca a lista de faixas (tracklist) de um disco específico usando seu ID no Discogs
+     * Busca a tracklist de um disco pelo ID Discogs. Retorna lista de Faixa (titulo + duracao).
      */
-    public List<String> buscarTracklist(int discogsId) throws Exception {
-        List<String> tracklist = new ArrayList<>();
-        
-        // Endpoint específico de releases: /releases/{id}
+    public List<Faixa> buscarTracklist(int discogsId) throws Exception {
+        List<Faixa> tracklist = new ArrayList<>();
+
         String urlCompleta = API_URL2 + "/releases/" + discogsId + "?token=" + TOKEN;
-        System.out.println("URL para tracklist: " + urlCompleta);
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -143,8 +142,12 @@ public class DiscogsService {
                 JsonArray tracks = jsonObject.getAsJsonArray("tracklist");
                 for (JsonElement trackElement : tracks) {
                     JsonObject trackObj = trackElement.getAsJsonObject();
-                    if (trackObj.has("title") && !trackObj.get("title").isJsonNull()) {
-                        tracklist.add(trackObj.get("title").getAsString());
+                    String titulo = trackObj.has("title") && !trackObj.get("title").isJsonNull()
+                            ? trackObj.get("title").getAsString() : "";
+                    String duracao = trackObj.has("duration") && !trackObj.get("duration").isJsonNull()
+                            ? trackObj.get("duration").getAsString() : "";
+                    if (!titulo.isBlank()) {
+                        tracklist.add(new Faixa(titulo, duracao));
                     }
                 }
             }
