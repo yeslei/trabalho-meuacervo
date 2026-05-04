@@ -43,7 +43,7 @@ public class CriarPostServlet extends HttpServlet {
             if (voltarSeguro != null) {
                 response.sendRedirect(request.getContextPath() + comParametro(voltarSeguro, "erro", "id-disco-invalido"));
             } else {
-                response.sendRedirect(request.getContextPath() + "/novoPost.jsp?erro=id-disco-invalido");
+                response.sendRedirect(request.getContextPath() + "/index.jsp?erro=id-disco-invalido");
             }
             return;
         }
@@ -60,14 +60,14 @@ public class CriarPostServlet extends HttpServlet {
             if (voltarSeguro != null) {
                 response.sendRedirect(request.getContextPath() + comParametro(voltarSeguro, "erro", codigo));
             } else {
-                response.sendRedirect(request.getContextPath() + "/novoPost.jsp?erro=" + codigo + "&id_disco=" + idDisco);
+                response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=" + codigo);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             if (voltarSeguro != null) {
                 response.sendRedirect(request.getContextPath() + comParametro(voltarSeguro, "erro", "banco"));
             } else {
-                response.sendRedirect(request.getContextPath() + "/novoPost.jsp?erro=banco&id_disco=" + idDisco);
+                response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=banco");
             }
         }
     }

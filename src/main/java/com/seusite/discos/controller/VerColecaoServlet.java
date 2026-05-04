@@ -48,8 +48,13 @@ public class VerColecaoServlet extends HttpServlet {
                 List<Disco> meusDiscos = itemDAO.listarDiscosDaColecao(colecao.getIdColecao());
 
                 // envia dados para o JSP
-                request.setAttribute("colecao", colecao);
-                request.setAttribute("listaDiscos", meusDiscos);
+                request.setAttribute("perfilUsuario", usuarioLogado);
+                request.setAttribute("abaAtual", "colecao");
+                request.setAttribute("ehProprioPerfil", Boolean.TRUE);
+                request.setAttribute("colecao", meusDiscos);
+                request.setAttribute("totalDiscos", meusDiscos.size());
+                request.setAttribute("totalReviews", 0);
+                request.setAttribute("totalFavoritos", 0);
                 
                 // Verifica se há busca de discos
                 String buscar = request.getParameter("buscar");
@@ -66,7 +71,7 @@ public class VerColecaoServlet extends HttpServlet {
                 }
                 
                 //despacha para a página visual
-                request.getRequestDispatcher("/minha-colecao.jsp").forward(request, response);
+                request.getRequestDispatcher("/perfil.jsp").forward(request, response);
             }
 
         } catch (Exception e) {

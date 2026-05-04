@@ -50,7 +50,7 @@ public class LoginServlet extends HttpServlet {
                     response.addCookie(cookieId);
                 }
 
-                response.sendRedirect(request.getContextPath() + "/colecao/ver");
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
 
             } else {
                 response.sendRedirect(request.getContextPath() + "/login.jsp?erro=login-invalido");

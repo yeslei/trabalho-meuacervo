@@ -43,10 +43,17 @@ public class ListarColecoesServlet extends HttpServlet {
             }
 
             // Envia a lista para a view
+            request.setAttribute("perfilUsuario", usuarioLogado);
+            request.setAttribute("abaAtual", "colecao");
+            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
             request.setAttribute("colecoes", listaDeColecoes);
+            request.setAttribute("colecao", java.util.Collections.emptyList());
+            request.setAttribute("totalDiscos", 0);
+            request.setAttribute("totalReviews", 0);
+            request.setAttribute("totalFavoritos", 0);
             
             // Despacha para a página que exibe os cards de coleções
-            request.getRequestDispatcher("/listar-colecoes.jsp").forward(request, response);
+            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

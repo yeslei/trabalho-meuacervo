@@ -28,11 +28,7 @@ import jakarta.servlet.http.HttpSession;
         "/disco/metricas",
         "/wishlist/adicionar",
         "/wishlist/remover",
-        "/wishlist/listar",
-        "/feed.jsp",
-        "/postDetalhe.jsp",
-        "/novoPost.jsp",
-        "/avaliarDisco.jsp"
+        "/wishlist/listar"
 })
 public class AuthFilter extends HttpFilter implements Filter {
 

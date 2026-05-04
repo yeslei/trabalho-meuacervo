@@ -51,7 +51,7 @@ public class VerPostServlet extends HttpServlet {
             request.setAttribute("post", post);
             request.setAttribute("totalCurtidas", totalCurtidas);
             request.setAttribute("usuarioJaCurtiu", usuarioJaCurtiu);
-            request.getRequestDispatcher("/postDetalhe.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/feed?erro=banco");

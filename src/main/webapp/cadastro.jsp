@@ -1,90 +1,101 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeuAcervo - Criar Conta</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cadastro.css">
+    <title>Cadastro | MeuAcervo</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<div class="page">
-    <section class="hero">
-        <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <span>MeuAcervo</span>
-        </div>
 
-        <div class="hero-copy">
-            <h1>Comece a montar <span>seu acervo</span></h1>
-            <p>Registre seus discos, avalie albuns e acompanhe sua evolucao musical.</p>
+<div class="split-layout">
+    <div class="split-left">
+        <a href="${pageContext.request.contextPath}/index.jsp"
+           style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.5rem;
+                  margin-bottom: 4rem; color: var(--primary-text); text-decoration: none;">
+            <i class="fa-solid fa-record-vinyl" style="color: var(--primary-accent); font-size: 2rem;"></i> MeuAcervo
+        </a>
 
-            <div class="hero-points">
-                <div class="point">
-                    <span class="point-icon">&#9733;</span>
-                    <div>
-                        <strong>Avalie e descubra</strong>
-                        Estrelas, reviews e o que a galera esta ouvindo agora.
-                    </div>
-                </div>
-                <div class="point">
-                    <span class="point-icon">&#9829;</span>
-                    <div>
-                        <strong>Lista de desejos</strong>
-                        Salve os discos que voce quer comprar e nunca mais esqueca.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2;">
+            Comece a montar<br>
+            <span style="color: var(--primary-accent);">seu acervo</span>
+        </h1>
+        <p style="color: var(--primary-text); font-size: 1.1rem; max-width: 400px;">
+            Registre seus discos, avalie Ã¡lbuns e acompanhe sua evoluÃ§Ã£o musical.
+        </p>
+    </div>
 
-    <section class="panel">
-        <div class="panel-card">
-            <div class="eyebrow">BEM-VINDO</div>
-            <h2>Crie sua conta</h2>
-            <p>E rapido. Em menos de um minuto voce estara pronto para montar seu acervo.</p>
+    <div class="split-right">
+        <div class="auth-form-container">
+            <p style="color: var(--primary-accent); font-size: 0.75rem; font-weight: 600;
+                      letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">Bem-vindo</p>
+            <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 500;">Crie sua conta</h2>
+            <p style="color: var(--secondary-text); font-size: 0.9rem; margin-bottom: 2rem;">
+                Ã‰ rÃ¡pido. Em menos de um minuto vocÃª estarÃ¡ pronto para montar seu acervo.
+            </p>
 
             <c:if test="${param.erro == 'campos-vazios'}">
-                <div class="alert error">Preencha todos os campos obrigatorios.</div>
+                <div class="alert alert-error">Preencha todos os campos obrigatÃ³rios.</div>
             </c:if>
             <c:if test="${param.erro == 'email-invalido'}">
-                <div class="alert error">Informe um e-mail valido.</div>
+                <div class="alert alert-error">Formato de e-mail invÃ¡lido.</div>
             </c:if>
-            <c:if test="${param.erro == 'usuario-existente'}">
-                <div class="alert error">Usuario ja cadastrado.</div>
+            <c:if test="${param.erro == 'senha-curta'}">
+                <div class="alert alert-error">A senha precisa ter pelo menos 8 caracteres.</div>
+            </c:if>
+            <c:if test="${param.erro == 'email-existente'}">
+                <div class="alert alert-error">Este e-mail jÃ¡ estÃ¡ cadastrado. Que tal fazer login?</div>
+            </c:if>
+            <c:if test="${param.erro == 'username-existente'}">
+                <div class="alert alert-error">Este nome de usuÃ¡rio jÃ¡ estÃ¡ em uso.</div>
+            </c:if>
+            <c:if test="${param.erro == 'banco'}">
+                <div class="alert alert-error">Erro ao acessar o banco. Tente novamente em instantes.</div>
             </c:if>
 
-            <form method="post" action="<%= request.getContextPath() %>/cadastro">
-                <div class="field">
+            <form id="form-cadastro" action="${pageContext.request.contextPath}/cadastro" method="POST"
+                  data-single-submit>
+                <div class="form-group">
                     <label for="nome">Nome completo</label>
-                    <input id="nome" name="nome" type="text" placeholder="Digite seu nome" required>
+                    <input type="text" id="nome" name="nome" placeholder="Seu nome completo">
                 </div>
-                <div class="field">
-                    <label for="username">Nome de usuario</label>
-                    <input id="username" name="username" type="text" placeholder="seunome" required>
+                <div class="form-group">
+                    <label for="username">
+                        Nome de usuÃ¡rio
+                        <span id="username-counter" class="char-counter">0/15</span>
+                    </label>
+                    <input type="text" id="username" name="username"
+                           placeholder="seu_username" maxlength="15">
                 </div>
-                <div class="field">
+                <div class="form-group">
                     <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email" placeholder="seu@email.com" required>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com">
                 </div>
-                <div class="field">
+                <div class="form-group">
                     <label for="senha">Senha</label>
-                    <input id="senha" name="senha" type="password" minlength="6" placeholder="Minimo 6 caracteres" required>
-                </div>
-                <div class="field">
-                    <label for="confirmar">Confirmar senha</label>
-                    <input id="confirmar" name="confirmar" type="password" minlength="6" placeholder="Minimo 6 caracteres" required>
+                    <div class="input-senha-wrapper">
+                        <input type="password" id="senha" name="senha"
+                               placeholder="MÃ­nimo 8 caracteres" minlength="8">
+                        <button type="button" class="btn-toggle-senha" title="Mostrar senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <button class="submit" type="submit">Criar minha conta</button>
+                <button type="submit" class="btn-primary">Criar minha conta</button>
+
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--secondary-text);">
+                    JÃ¡ tem conta?
+                    <a href="${pageContext.request.contextPath}/login.jsp"
+                       style="color: var(--primary-accent);">Entrar</a>
+                </p>
             </form>
-
-            <div class="form-footer">
-                Ja tem conta? <a href="<%= request.getContextPath() %>/login.jsp">Entrar</a>
-            </div>
         </div>
-    </section>
+    </div>
 </div>
+
+<script src="${pageContext.request.contextPath}/assets/js/validation.js"></script>
 </body>
 </html>

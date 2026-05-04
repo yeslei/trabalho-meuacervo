@@ -39,7 +39,7 @@ public class AvaliarDiscoServlet extends HttpServlet {
         try {
             idDisco = Integer.parseInt(request.getParameter("id_disco").trim());
         } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/avaliarDisco.jsp?erro=id-disco-invalido");
+            response.sendRedirect(request.getContextPath() + "/detalhes.jsp?erro=id-disco-invalido");
             return;
         }
 
@@ -56,7 +56,7 @@ public class AvaliarDiscoServlet extends HttpServlet {
         try {
             Disco disco = discoDAO.buscarPorId(idDisco);
             if (disco == null) {
-                response.sendRedirect(request.getContextPath() + "/avaliarDisco.jsp?erro=disco-inexistente");
+                response.sendRedirect(request.getContextPath() + "/detalhes.jsp?erro=disco-inexistente");
                 return;
             }
             request.setAttribute("disco", disco);
@@ -73,10 +73,10 @@ public class AvaliarDiscoServlet extends HttpServlet {
                 request.setAttribute("temProxima", Boolean.FALSE);
                 request.setAttribute("mensagemErroPosts", "banco");
             }
-            request.getRequestDispatcher("/avaliarDisco.jsp").forward(request, response);
+            request.getRequestDispatcher("/detalhes.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/avaliarDisco.jsp?erro=banco");
+            response.sendRedirect(request.getContextPath() + "/detalhes.jsp?erro=banco");
         }
     }
 
@@ -95,7 +95,7 @@ public class AvaliarDiscoServlet extends HttpServlet {
         try {
             idDisco = Integer.parseInt(request.getParameter("id_disco").trim());
         } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/avaliarDisco.jsp?erro=id-disco-invalido");
+            response.sendRedirect(request.getContextPath() + "/detalhes.jsp?erro=id-disco-invalido");
             return;
         }
 
@@ -121,3 +121,4 @@ public class AvaliarDiscoServlet extends HttpServlet {
         }
     }
 }
+

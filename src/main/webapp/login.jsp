@@ -1,83 +1,91 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeuAcervo - Entrar</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/login.css">
+    <title>Login | MeuAcervo</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<div class="page">
-    <section class="hero">
-        <div class="brand">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <span>MeuAcervo</span>
-        </div>
 
-        <div class="hero-copy">
-            <h1>Reviva seus <span>albuns</span> favoritos.</h1>
-            <p>Acompanhe sua colecao, registre momentos e descubra novos sons.</p>
+<div class="split-layout">
+    <div class="split-left">
+        <a href="${pageContext.request.contextPath}/index.jsp"
+           style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.5rem;
+                  margin-bottom: 4rem; color: var(--primary-text); text-decoration: none;">
+            <i class="fa-solid fa-record-vinyl" style="color: var(--primary-accent); font-size: 2rem;"></i> MeuAcervo
+        </a>
 
-            <div class="hero-points">
-                <div class="point">
-                    <span class="point-icon">&#9733;</span>
-                    <div>
-                        <strong>Catalogue cada disco</strong>
-                        Organize sua colecao e veja tudo com detalhes rapidos.
-                    </div>
-                </div>
-                <div class="point">
-                    <span class="point-icon">&#9829;</span>
-                    <div>
-                        <strong>Conecte com a comunidade</strong>
-                        Reviews, favoritos e descobertas compartilhadas com outros colecionadores.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem; line-height: 1.2;">
+            Reviva seus <span style="color: var(--primary-accent);">Ã¡lbuns</span><br>
+            favoritos.
+        </h1>
+        <p style="color: var(--primary-text); font-size: 1.1rem; max-width: 400px;">
+            Acompanhe sua coleÃ§Ã£o, registre momentos e descubra novos sons.
+        </p>
+    </div>
 
-    <section class="panel">
-        <div class="panel-card">
-            <div class="eyebrow">ACESSO</div>
-            <h2>Entre na sua conta</h2>
-            <p>Bem-vindo de volta, continue de onde parou.</p>
+    <div class="split-right">
+        <div class="auth-form-container">
+            <p style="color: var(--primary-accent); font-size: 0.75rem; font-weight: 600;
+                      letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">Acesso</p>
+            <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 500;">Entre na sua conta</h2>
+            <p style="color: var(--secondary-text); font-size: 0.9rem; margin-bottom: 2rem;">
+                Bem-vindo de volta, continue de onde parou
+            </p>
 
-            <c:if test="${param.sucesso == 'cadastro-realizado'}">
-                <div class="alert success">Cadastro realizado. Agora faca seu login.</div>
+            <c:if test="${param.sucesso == 'logout'}">
+                <div class="alert alert-success">VocÃª saiu da sua conta. AtÃ© logo!</div>
             </c:if>
             <c:if test="${param.erro == 'login-invalido'}">
-                <div class="alert error">E-mail ou senha incorretos.</div>
+                <div class="alert alert-error">E-mail ou senha incorretos.</div>
+            </c:if>
+            <c:if test="${param.erro == 'campos-vazios'}">
+                <div class="alert alert-error">Preencha todos os campos.</div>
+            </c:if>
+            <c:if test="${param.erro == 'nao-autenticado'}">
+                <div class="alert alert-error">VocÃª precisa estar logado para acessar essa pÃ¡gina.</div>
             </c:if>
             <c:if test="${param.erro == 'banco'}">
-                <div class="alert error">Erro ao acessar o banco de dados.</div>
+                <div class="alert alert-error">Erro ao acessar o banco. Tente novamente em instantes.</div>
             </c:if>
 
-            <form method="post" action="<%= request.getContextPath() %>/login">
-                <div class="field">
+            <form id="form-login" action="${pageContext.request.contextPath}/login" method="POST"
+                  data-single-submit>
+                <div class="form-group">
                     <label for="email">E-mail</label>
-                    <input id="email" name="email" type="email" placeholder="seu@email.com" required>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com">
                 </div>
-                <div class="field">
+                <div class="form-group">
                     <label for="senha">Senha</label>
-                    <input id="senha" name="senha" type="password" placeholder="Sua senha" required>
+                    <div class="input-senha-wrapper">
+                        <input type="password" id="senha" name="senha" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+                        <button type="button" class="btn-toggle-senha" title="Mostrar senha">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <label class="helper">
-                    <input type="checkbox" name="lembrar" value="true">
-                    Manter conectado
-                </label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <input type="checkbox" id="lembrar" name="lembrar"
+                           style="accent-color: var(--primary-accent);">
+                    <label for="lembrar" style="color: var(--secondary-text); font-size: 0.85rem;">Manter conectado</label>
+                </div>
 
-                <button class="submit" type="submit">Entrar</button>
+                <button type="submit" class="btn-primary">Entrar</button>
+
+                <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--secondary-text);">
+                    Ainda nÃ£o tem conta?
+                    <a href="${pageContext.request.contextPath}/cadastro.jsp"
+                       style="color: var(--primary-accent);">Criar conta</a>
+                </p>
             </form>
-
-            <div class="form-footer">
-                Ainda nao tem conta? <a href="<%= request.getContextPath() %>/cadastro.jsp">Criar conta</a>
-            </div>
         </div>
-    </section>
+    </div>
 </div>
+
+<script src="${pageContext.request.contextPath}/assets/js/validation.js"></script>
 </body>
 </html>

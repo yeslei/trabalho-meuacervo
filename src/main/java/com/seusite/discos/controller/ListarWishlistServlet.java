@@ -36,10 +36,18 @@ public class ListarWishlistServlet extends HttpServlet {
             // Busca a coleção de desejos baseada na inteligência do Service/DAO
             List<Disco> minhaWishlist = wishlistService.listarWishlistDoUsuario(usuarioLogado.getIdUsuario());
 
-            request.setAttribute("listaDesejos", minhaWishlist);
+            request.setAttribute("perfilUsuario", usuarioLogado);
+            request.setAttribute("abaAtual", "favoritos");
+            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
+            request.setAttribute("favoritos", minhaWishlist);
+            request.setAttribute("colecao", java.util.Collections.emptyList());
+            request.setAttribute("reviews", java.util.Collections.emptyList());
+            request.setAttribute("totalDiscos", 0);
+            request.setAttribute("totalReviews", 0);
+            request.setAttribute("totalFavoritos", minhaWishlist.size());
             
             // Repassa para a View fazer o trabalho visual
-            request.getRequestDispatcher("/wishlist.jsp").forward(request, response);
+            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
