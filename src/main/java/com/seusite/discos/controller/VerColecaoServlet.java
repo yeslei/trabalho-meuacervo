@@ -4,6 +4,7 @@ import com.seusite.discos.model.Colecao;
 import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.ColecaoService;
+import com.seusite.discos.service.DiscogsService;
 import com.seusite.discos.dao.ItemColecaoDAO;
 import com.seusite.discos.config.ConnectionFactory;
 
@@ -21,6 +22,7 @@ import java.util.List;
 public class VerColecaoServlet extends HttpServlet {
 
     private ColecaoService colecaoService = new ColecaoService();
+    private DiscogsService discogsService = new DiscogsService();
 
     @Override
     // recebe requisições GET, verifica o usuário logado, chama o serviço para obter ou criar a coleção e encaminha os dados para um JSP de visualização
@@ -47,6 +49,20 @@ public class VerColecaoServlet extends HttpServlet {
                 // envia dados para o JSP
                 request.setAttribute("colecao", colecao);
                 request.setAttribute("listaDiscos", meusDiscos);
+                
+                // Verifica se há busca de discos
+                String buscar = request.getParameter("buscar");
+                String termoBusca = request.getParameter("q");
+                
+                if (buscar != null && termoBusca != null && !termoBusca.trim().isEmpty()) {
+                    try {
+                        List<Disco> resultados = discogsService.buscarDiscosPorTermo(termoBusca.trim(), 1);
+                        request.setAttribute("resultados", resultados);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        request.setAttribute("resultados", java.util.Collections.emptyList());
+                    }
+                }
                 
                 //despacha para a página visual
                 request.getRequestDispatcher("/minha-colecao.jsp").forward(request, response);

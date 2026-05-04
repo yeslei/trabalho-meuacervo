@@ -39,7 +39,7 @@ public class BuscarDiscosServlet extends HttpServlet {
                 
             } catch (Exception e) {
                 request.setAttribute("erro", "Erro ao consultar a API: " + e.getMessage());
-                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.getRequestDispatcher("/busca.jsp").forward(request, response);
             }
         } else {
             // Se não houver busca, apenas volta para a home ou exibe vazio

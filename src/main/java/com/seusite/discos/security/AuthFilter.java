@@ -15,15 +15,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @WebFilter({
-        "/minhas-colecoes",
-        "/colecao",
-        "/criar-colecao",
-        "/adicionar-disco-colecao",
+        "/colecao/ver",
+        "/colecao/listar",
+        "/colecao/criar",
+        "/colecao/adicionar",
         "/feed",
         "/post",
         "/criar-post",
         "/curtir-post",
         "/avaliar-disco",
+        "/buscar-discos",
+        "/wishlist/adicionar",
+        "/wishlist/remover",
+        "/wishlist/listar",
         "/feed.jsp",
         "/postDetalhe.jsp",
         "/novoPost.jsp",
