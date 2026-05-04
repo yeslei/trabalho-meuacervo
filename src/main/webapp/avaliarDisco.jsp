@@ -82,7 +82,14 @@
 
                     <div class="tracklist">
                         <h3>Lista de faixas</h3>
-                        <div class="track-empty">Faixas indisponiveis no momento.</div>
+                        <c:choose>
+                            <c:when test="${not empty disco.discogsId}">
+                                <div id="tracklist-content" class="track-loading">Carregando faixas...</div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="track-empty">Faixas indisponiveis no momento.</div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </div>
 
@@ -242,6 +249,33 @@
             .catch(function () {
                 // ignore fetch errors
             });
+
+        // Chamada assincrona para a Tracklist
+        var discogsId = "<c:out value='${disco.discogsId}'/>";
+        if (discogsId) {
+            fetch(ctx + "/ver-tracklist?id=" + discogsId)
+                .then(function (response) {
+                    // Se o servlet falhar, ele faz um redirect para o index.jsp
+                    if (!response.ok || (response.redirected && response.url.includes("index.jsp"))) {
+                        throw new Error("Falha ao carregar a tracklist");
+                    }
+                    return response.text();
+                })
+                .then(function (html) {
+                    var tracklistContent = document.getElementById("tracklist-content");
+                    if (tracklistContent) {
+                        tracklistContent.innerHTML = html;
+                        tracklistContent.classList.remove("track-loading");
+                    }
+                })
+                .catch(function () {
+                    var tracklistContent = document.getElementById("tracklist-content");
+                    if (tracklistContent) {
+                        tracklistContent.innerHTML = "<div class='track-empty'>Faixas indisponiveis no momento.</div>";
+                        tracklistContent.classList.remove("track-loading");
+                    }
+                });
+        }
     })();
 </script>
 </body>
