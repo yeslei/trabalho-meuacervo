@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <display-name>MeuAcervo</display-name>
+
+    <!-- Quando alguém acessa a raiz (/), redireciona para a Home com o feed populado -->
+    <welcome-file-list>
+        <welcome-file>listarFeedServlet</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- ================================================================
+         Cache HTTP – aplica Cache-Control em todas as requisições.
+         Deve ser o primeiro filtro da cadeia para garantir os headers.
+         ================================================================ -->
+    <filter>
+        <filter-name>CacheFilter</filter-name>
+        <filter-class>com.seusite.discos.security.CacheFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CacheFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- ================================================================
+         Páginas de erro
+         ================================================================ -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/erro.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>500</error-code>
+        <location>/erro.jsp</location>
+    </error-page>
+
+    <!-- ================================================================
+         Perfis de segurança (Security Roles) da aplicação.
+         A verificação é feita programaticamente no AuthFilter.
+         ================================================================ -->
+    <security-role>
+        <description>Usuário comum — pode usar todas as funcionalidades de membro.</description>
+        <role-name>user</role-name>
+    </security-role>
+    <security-role>
+        <description>Administrador — acesso a rotas de manutenção e seed de dados.</description>
+        <role-name>admin</role-name>
+    </security-role>
+
+</web-app>
