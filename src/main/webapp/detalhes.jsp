@@ -1,6 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -96,7 +96,7 @@
                         <%-- Adicionar / remover da Coleção --%>
                         <c:choose>
                             <c:when test="${estaNaColecao}">
-                                <form action="${pageContext.request.contextPath}/colecaoServlet" method="POST">
+                                <form action="${pageContext.request.contextPath}/colecao/adicionar" method="POST">
                                     <input type="hidden" name="id_disco" value="${disco.idDisco}">
                                     <input type="hidden" name="acao" value="remover">
                                     <button type="submit" class="btn-acao active">
@@ -105,7 +105,7 @@
                                 </form>
                             </c:when>
                             <c:otherwise>
-                                <form action="${pageContext.request.contextPath}/colecaoServlet" method="POST">
+                                <form action="${pageContext.request.contextPath}/colecao/adicionar" method="POST">
                                     <input type="hidden" name="id_disco" value="${disco.idDisco}">
                                     <input type="hidden" name="acao" value="adicionar">
                                     <button type="submit" class="btn-acao">
@@ -118,7 +118,7 @@
                         <%-- Adicionar / remover da Wishlist --%>
                         <c:choose>
                             <c:when test="${estaNaWishlist}">
-                                <form action="${pageContext.request.contextPath}/wishlistServlet" method="POST">
+                                <form action="${pageContext.request.contextPath}/wishlist/adicionar" method="POST">
                                     <input type="hidden" name="id_disco" value="${disco.idDisco}">
                                     <input type="hidden" name="acao" value="remover">
                                     <button type="submit" class="btn-acao active">
@@ -127,7 +127,7 @@
                                 </form>
                             </c:when>
                             <c:otherwise>
-                                <form action="${pageContext.request.contextPath}/wishlistServlet" method="POST">
+                                <form action="${pageContext.request.contextPath}/wishlist/adicionar" method="POST">
                                     <input type="hidden" name="id_disco" value="${disco.idDisco}">
                                     <input type="hidden" name="acao" value="adicionar">
                                     <button type="submit" class="btn-acao">
@@ -181,7 +181,7 @@
                 </c:choose>
             </h3>
 
-            <form action="${pageContext.request.contextPath}/avaliarDiscoServlet" method="POST">
+            <form action="${pageContext.request.contextPath}/avaliar-disco" method="POST">
                 <input type="hidden" name="id_disco" value="${disco.idDisco}">
 
                 <%-- 5 radios em RTL para que o hover acenda da direita pra esquerda --%>
@@ -225,8 +225,8 @@
                 <c:forEach var="r" items="${reviews}">
                     <article class="review-card">
                         <c:choose>
-                            <c:when test="${not empty r.disco.imagemCapa}">
-                                <img src="${r.disco.imagemCapa}" alt="${r.disco.titulo}" class="review-cover">
+                            <c:when test="${not empty disco.imagemCapa}">
+                                <img src="${disco.imagemCapa}" alt="${disco.titulo}" class="review-cover">
                             </c:when>
                             <c:otherwise>
                                 <div class="review-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">

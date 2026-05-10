@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,7 +12,7 @@
 
 <div class="split-layout">
     <div class="split-left">
-        <a href="${pageContext.request.contextPath}/listarFeedServlet"
+        <a href="${pageContext.request.contextPath}/index.jsp"
            style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.5rem;
                   margin-bottom: 4rem; color: var(--primary-text); text-decoration: none;">
             <i class="fa-solid fa-record-vinyl" style="color: var(--primary-accent); font-size: 2rem;"></i> MeuAcervo
@@ -55,7 +55,7 @@
                 <div class="alert alert-error">Erro ao acessar o banco. Tente novamente em instantes.</div>
             </c:if>
 
-            <form id="form-cadastro" action="${pageContext.request.contextPath}/cadastroServlet" method="POST"
+            <form id="form-cadastro" action="${pageContext.request.contextPath}/cadastro" method="POST"
                   data-single-submit>
                 <div class="form-group">
                     <label for="nome">Nome completo</label>

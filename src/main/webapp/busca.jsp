@@ -1,6 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,34 +13,40 @@
 <jsp:include page="header.jsp"/>
 
 <main class="container">
-
     <h2 class="section-heading" style="text-align: left;">
         <c:choose>
-            <c:when test="${empty termo}">Resultados da busca</c:when>
-            <c:otherwise>Resultados para "<c:out value="${termo}"/>"</c:otherwise>
+            <c:when test="${empty termoBusca}">Resultados da busca</c:when>
+            <c:otherwise>Resultados para "<c:out value="${termoBusca}"/>"</c:otherwise>
         </c:choose>
-        <span class="count">${fn:length(resultados)}</span>
     </h2>
 
-    <c:if test="${not empty avisoDiscogs}">
-        <div class="alert alert-error"><c:out value="${avisoDiscogs}"/></div>
+    <c:if test="${not empty erro}">
+        <div class="alert alert-error"><c:out value="${erro}"/></div>
     </c:if>
     <c:if test="${not empty mensagemErro}">
-        <div class="alert alert-error">${mensagemErro}</div>
+        <div class="alert alert-error"><c:out value="${mensagemErro}"/></div>
     </c:if>
 
     <div class="card-grid">
         <c:choose>
-            <c:when test="${empty termo}">
+            <c:when test="${empty termoBusca}">
                 <p class="empty-state">Digite algo no campo de busca acima para encontrar discos.</p>
             </c:when>
-            <c:when test="${empty resultados}">
-                <p class="empty-state">Nenhum disco encontrado para "<c:out value="${termo}"/>".</p>
+            <c:when test="${empty discos}">
+                <p class="empty-state">Nenhum disco encontrado para "<c:out value="${termoBusca}"/>".</p>
             </c:when>
             <c:otherwise>
-                <c:forEach var="d" items="${resultados}">
-                    <article class="album-card"
-                             onclick="window.location.href='${pageContext.request.contextPath}/detalhesDiscoServlet?id=${d.idDisco}'">
+                <c:forEach var="d" items="${discos}">
+                    <c:url var="detalheUrl" value="/disco/abrir">
+                        <c:param name="discogsId" value="${d.discogsId}"/>
+                        <c:param name="titulo" value="${d.titulo}"/>
+                        <c:param name="artista" value="${d.artista}"/>
+                        <c:param name="ano" value="${d.anoLancamento}"/>
+                        <c:param name="genero" value="${d.genero}"/>
+                        <c:param name="formato" value="${d.formato}"/>
+                        <c:param name="capa" value="${d.imagemCapa}"/>
+                    </c:url>
+                    <article class="album-card" onclick="window.location.href='${detalheUrl}'">
                         <c:choose>
                             <c:when test="${not empty d.imagemCapa}">
                                 <img src="${d.imagemCapa}" alt="${d.titulo}" class="album-cover">
@@ -64,7 +69,6 @@
             </c:otherwise>
         </c:choose>
     </div>
-
 </main>
 
 </body>
