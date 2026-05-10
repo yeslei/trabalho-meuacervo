@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1">
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
 
     <display-name>MeuAcervo</display-name>
 
-    <!-- Quando alguém acessa a raiz (/), redireciona para a Home com o feed populado -->
+    <request-character-encoding>UTF-8</request-character-encoding>
+    <response-character-encoding>UTF-8</response-character-encoding>
+
     <welcome-file-list>
-        <welcome-file>listarFeedServlet</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>login.jsp</welcome-file>
     </welcome-file-list>
 
     <session-config>
@@ -21,15 +22,6 @@
          Cache HTTP – aplica Cache-Control em todas as requisições.
          Deve ser o primeiro filtro da cadeia para garantir os headers.
          ================================================================ -->
-    <filter>
-        <filter-name>CacheFilter</filter-name>
-        <filter-class>com.seusite.discos.security.CacheFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>CacheFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-
     <!-- ================================================================
          Páginas de erro
          ================================================================ -->

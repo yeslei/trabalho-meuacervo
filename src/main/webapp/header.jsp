@@ -1,15 +1,15 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <header class="top-header">
-    <a href="${pageContext.request.contextPath}/listarFeedServlet" class="logo-container">
+    <a href="${pageContext.request.contextPath}/home" class="logo-container">
         <i class="fa-solid fa-record-vinyl logo-icon"></i> MeuAcervo
     </a>
 
     <div class="search-bar">
-        <form action="${pageContext.request.contextPath}/buscarServlet" method="GET">
+        <form action="${pageContext.request.contextPath}/buscar-discos" method="GET">
             <i class="fa-solid fa-magnifying-glass"
                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--secondary-text);"></i>
             <input type="text" name="q" placeholder="Procure por artistas, álbuns e mais..." value="${param.q}">
@@ -17,25 +17,25 @@
     </div>
 
     <nav class="nav-icons">
-        <a href="${pageContext.request.contextPath}/listarFeedServlet" title="Home">
+        <a href="${pageContext.request.contextPath}/home" title="Home">
             <i class="fa-solid fa-house"></i>
         </a>
 
         <c:choose>
             <c:when test="${not empty sessionScope.usuarioLogado}">
-                <a href="${pageContext.request.contextPath}/perfilServlet?aba=colecao" title="Minha Coleção">
+                <a href="${pageContext.request.contextPath}/colecao/ver" title="Minha Coleção">
                     <i class="fa-solid fa-compact-disc"></i>
                 </a>
-                <a href="${pageContext.request.contextPath}/perfilServlet?aba=reviews" title="Meus Reviews">
+                <a href="${pageContext.request.contextPath}/perfil/reviews" title="Meus Reviews">
                     <i class="fa-solid fa-pen"></i>
                 </a>
-                <a href="${pageContext.request.contextPath}/perfilServlet?aba=favoritos" title="Favoritos">
+                <a href="${pageContext.request.contextPath}/wishlist/listar" title="Favoritos">
                     <i class="fa-regular fa-heart"></i>
                 </a>
-                <a href="${pageContext.request.contextPath}/perfilServlet" title="${sessionScope.usuarioLogado.nome}">
+                <a href="${pageContext.request.contextPath}/colecao/ver" title="${sessionScope.usuarioLogado.nome}">
                     <i class="fa-regular fa-user"></i>
                 </a>
-                <a href="${pageContext.request.contextPath}/logoutServlet"
+                <a href="${pageContext.request.contextPath}/logout"
                    title="Sair"
                    style="background: var(--primary-accent); color: #1a1a1a; margin-left: 0.4rem;">
                     <i class="fa-solid fa-right-from-bracket"></i>

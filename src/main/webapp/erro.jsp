@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" isErrorPage="true" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -19,7 +19,7 @@
         <p style="color: var(--secondary-text); margin-bottom: 2rem;">
             Não conseguimos encontrar o que você procurava. Que tal voltar para a Home?
         </p>
-        <a href="${pageContext.request.contextPath}/listarFeedServlet" class="btn-primary"
+        <a href="${pageContext.request.contextPath}/index.jsp" class="btn-primary"
            style="display: inline-block; max-width: 200px; text-align: center; text-decoration: none;">
             Voltar para a Home
         </a>

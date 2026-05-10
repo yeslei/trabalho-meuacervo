@@ -1,7 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -60,21 +60,21 @@
          3 cards de estatísticas
          ==================================================================== --%>
     <section class="stats-grid">
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=colecao&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/colecao/ver"
            class="stat-card" style="text-decoration: none;">
             <div class="stat-icon"><i class="fa-solid fa-compact-disc"></i></div>
             <div class="stat-numero">${totalDiscos}</div>
             <div class="stat-label">Discos na Coleção</div>
         </a>
 
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=reviews&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/perfil/reviews"
            class="stat-card" style="text-decoration: none;">
             <div class="stat-icon"><i class="fa-solid fa-pen"></i></div>
             <div class="stat-numero">${totalReviews}</div>
             <div class="stat-label">Reviews Escritos</div>
         </a>
 
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=favoritos&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/wishlist/listar"
            class="stat-card" style="text-decoration: none;">
             <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
             <div class="stat-numero">${totalFavoritos}</div>
@@ -86,11 +86,11 @@
          Abas
          ==================================================================== --%>
     <nav class="tabs">
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=colecao&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/colecao/ver"
            class="tab-link <c:if test='${abaAtiva == "colecao"}'>active</c:if>">Coleção</a>
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=reviews&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/perfil/reviews"
            class="tab-link <c:if test='${abaAtiva == "reviews"}'>active</c:if>">Reviews</a>
-        <a href="${pageContext.request.contextPath}/perfilServlet?aba=favoritos&username=${usuarioPerfil.username}"
+        <a href="${pageContext.request.contextPath}/wishlist/listar"
            class="tab-link <c:if test='${abaAtiva == "favoritos"}'>active</c:if>">Favoritos</a>
     </nav>
 
@@ -123,10 +123,10 @@
                     <c:otherwise>
                         <c:forEach var="item" items="${colecao}">
                             <article class="album-card"
-                                     onclick="window.location.href='${pageContext.request.contextPath}/detalhesDiscoServlet?id=${item.disco.idDisco}'">
+                                     onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${item.idDisco}'">
                                 <c:choose>
-                                    <c:when test="${not empty item.disco.imagemCapa}">
-                                        <img src="${item.disco.imagemCapa}" alt="${item.disco.titulo}" class="album-cover">
+                                    <c:when test="${not empty item.imagemCapa}">
+                                        <img src="${item.imagemCapa}" alt="${item.titulo}" class="album-cover">
                                     </c:when>
                                     <c:otherwise>
                                         <div class="album-cover" style="display:flex;align-items:center;justify-content:center;color:var(--secondary-text);">
@@ -134,18 +134,12 @@
                                         </div>
                                     </c:otherwise>
                                 </c:choose>
-                                <div class="album-title"><c:out value="${item.disco.titulo}"/></div>
-                                <div class="album-artist"><c:out value="${item.disco.artista}"/></div>
+                                <div class="album-title"><c:out value="${item.titulo}"/></div>
+                                <div class="album-artist"><c:out value="${item.artista}"/></div>
                                 <div class="album-meta">
-                                    <span class="rating-stars">
-                                        <c:forEach begin="1" end="5" var="i">
-                                            <c:choose>
-                                                <c:when test="${not empty item.nota and i <= item.nota}">★</c:when>
-                                                <c:otherwise><span class="star-empty">★</span></c:otherwise>
-                                            </c:choose>
-                                        </c:forEach>
-                                    </span>
-                                    <i class="fa-regular fa-heart heart-toggle" style="font-size: 0.9rem;"></i>
+                                    <c:if test="${not empty item.anoLancamento}">
+                                        <span style="color: var(--secondary-text);"><c:out value="${item.anoLancamento}"/></span>
+                                    </c:if>
                                 </div>
                             </article>
                         </c:forEach>
@@ -177,7 +171,7 @@
                 <c:otherwise>
                     <c:forEach var="r" items="${reviews}">
                         <article class="review-card"
-                                 onclick="window.location.href='${pageContext.request.contextPath}/detalhesDiscoServlet?id=${r.disco.idDisco}'"
+                                 onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${r.disco.idDisco}'"
                                  style="cursor: pointer;">
                             <c:choose>
                                 <c:when test="${not empty r.disco.imagemCapa}">
@@ -253,7 +247,7 @@
                     <c:otherwise>
                         <c:forEach var="d" items="${favoritos}">
                             <article class="album-card"
-                                     onclick="window.location.href='${pageContext.request.contextPath}/detalhesDiscoServlet?id=${d.idDisco}'">
+                                     onclick="window.location.href='${pageContext.request.contextPath}/avaliar-disco?id_disco=${d.idDisco}'">
                                 <c:choose>
                                     <c:when test="${not empty d.imagemCapa}">
                                         <img src="${d.imagemCapa}" alt="${d.titulo}" class="album-cover">
