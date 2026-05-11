@@ -12,13 +12,12 @@ public class AuthService {
 
     // Cadastro de usuário
     public void cadastrarUsuario(Usuario usuario) throws SQLException {
-        // Verifica se o email já existe
         if (usuarioDAO.emailExiste(usuario.getEmail())) {
-            throw new SQLException("Email já registrado");
+            throw new IllegalArgumentException("email-existente");
         }
-
-        if (usuarioDAO.usernameExiste(usuario.getUsername())) {
-            throw new SQLException("Username já registrado");
+        if (usuario.getUsername() != null && !usuario.getUsername().isBlank()
+                && usuarioDAO.usernameExiste(usuario.getUsername())) {
+            throw new IllegalArgumentException("username-existente");
         }
 
         // Criptografa a senha

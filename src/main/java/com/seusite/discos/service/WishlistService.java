@@ -13,30 +13,26 @@ public class WishlistService {
     private DiscoService discoService;
 
     public WishlistService() {
-        // Instancia o novo serviço que cuida exclusivamente dos discos
         this.discoService = new DiscoService();
     }
 
-    /**
-     * Orquestra a adição de um disco vindo da API para a Wishlist do usuário.
-     */
+    /** Adiciona disco da API (salva no banco se inédito) e depois adiciona à wishlist. */
     public void adicionarDiscoNaWishlist(int idUsuario, Disco discoDaApi) throws SQLException {
-        
-        // responsabilidade de descobrir se já existe ou se precisa salvar um novo delegada para DiscoService
-        
         Disco discoGarantido = discoService.obterOuSalvarDisco(discoDaApi);
-        
-        // 2. Com a certeza do ID interno, adicionamos na Wishlist
         try (Connection conn = ConnectionFactory.getConnection()) {
             WishlistDAO wishlistDAO = new WishlistDAO(conn);
             wishlistDAO.adicionar(idUsuario, discoGarantido.getIdDisco());
         }
     }
 
-    /**
-     * Remove um disco específico da Wishlist do usuário.
-     * pega ID interno do banco, interacao do botao de remover da wishlist
-     */
+    /** Adiciona disco já existente no banco pelo ID interno. */
+    public void adicionarPorId(int idUsuario, int idDisco) throws SQLException {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            WishlistDAO wishlistDAO = new WishlistDAO(conn);
+            wishlistDAO.adicionar(idUsuario, idDisco);
+        }
+    }
+
     public void removerDiscoDaWishlist(int idUsuario, int idDisco) throws SQLException {
         try (Connection conn = ConnectionFactory.getConnection()) {
             WishlistDAO wishlistDAO = new WishlistDAO(conn);
@@ -44,13 +40,24 @@ public class WishlistService {
         }
     }
 
-    /**
-     * Busca todos os discos que estão na Wishlist do usuário.
-     */
+    public boolean possuiDisco(int idUsuario, int idDisco) throws SQLException {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            WishlistDAO wishlistDAO = new WishlistDAO(conn);
+            return wishlistDAO.existe(idUsuario, idDisco);
+        }
+    }
+
     public List<Disco> listarWishlistDoUsuario(int idUsuario) throws SQLException {
         try (Connection conn = ConnectionFactory.getConnection()) {
             WishlistDAO wishlistDAO = new WishlistDAO(conn);
             return wishlistDAO.listarPorUsuario(idUsuario);
+        }
+    }
+
+    public int contarWishlist(int idUsuario) throws SQLException {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            WishlistDAO wishlistDAO = new WishlistDAO(conn);
+            return wishlistDAO.contarPorUsuario(idUsuario);
         }
     }
 }

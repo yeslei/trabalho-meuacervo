@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.seusite.discos.model.Disco;
+import com.seusite.discos.model.Faixa;
+import com.seusite.discos.config.ApiConfig;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -25,8 +27,7 @@ public class DiscogsService {
 
     private static final String TOKEN = "BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt"; 
     private static final String API_URL = "https://api.discogs.com/database/search";
-
-
+    private static final String API_URL2 = "https://api.discogs.com";
     /**
      * Busca padrão: se não informar a página, traz sempre a primeira (página 1).
      */
@@ -44,7 +45,7 @@ public class DiscogsService {
         String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release" 
                            + "&page=" + pagina + "&per_page=50" 
                            + "&token=" + TOKEN;
-
+        System.out.println("URL COMPLETA: " + urlCompleta);
         // faz a chamada HTTP usando o HttpClient nativo do Java 11+
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -118,4 +119,41 @@ public class DiscogsService {
         return listaDiscos;
     }
 
+    /**
+     * Busca a tracklist de um disco pelo ID Discogs. Retorna lista de Faixa (titulo + duracao).
+     */
+    public List<Faixa> buscarTracklist(int discogsId) throws Exception {
+        List<Faixa> tracklist = new ArrayList<>();
+
+        String urlCompleta = API_URL2 + "/releases/" + discogsId + "?token=" + TOKEN;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(urlCompleta))
+                .header("User-Agent", "MeuAcervoApp/1.0")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
+            if (jsonObject.has("tracklist") && jsonObject.get("tracklist").isJsonArray()) {
+                JsonArray tracks = jsonObject.getAsJsonArray("tracklist");
+                for (JsonElement trackElement : tracks) {
+                    JsonObject trackObj = trackElement.getAsJsonObject();
+                    String titulo = trackObj.has("title") && !trackObj.get("title").isJsonNull()
+                            ? trackObj.get("title").getAsString() : "";
+                    String duracao = trackObj.has("duration") && !trackObj.get("duration").isJsonNull()
+                            ? trackObj.get("duration").getAsString() : "";
+                    if (!titulo.isBlank()) {
+                        tracklist.add(new Faixa(titulo, duracao));
+                    }
+                }
+            }
+        } else {
+            throw new Exception("Erro ao consultar Discogs para tracklist. Status: " + response.statusCode());
+        }
+        return tracklist;
+    }
 }
