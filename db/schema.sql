@@ -113,7 +113,7 @@ CREATE TABLE avaliacao_disco (
         UNIQUE (id_usuario, id_disco)
 );
 
-CREATE TABLE curtida_post (
+0CREATE TABLE curtida_post (
     id_usuario INT NOT NULL,
     id_post INT NOT NULL,
     data_curtida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

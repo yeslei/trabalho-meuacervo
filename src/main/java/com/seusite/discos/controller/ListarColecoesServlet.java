@@ -1,0 +1,64 @@
+package com.seusite.discos.controller;
+
+import com.seusite.discos.model.Colecao;
+import com.seusite.discos.model.Usuario;
+import com.seusite.discos.service.ColecaoService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+
+// Servlet para listar as coleções do usuário logado, mesmo que ele tenha apenas uma coleção principal
+@WebServlet("/colecao/listar")
+public class ListarColecoesServlet extends HttpServlet {
+
+    private final ColecaoService colecaoService = new ColecaoService();
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
+
+        if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
+        try {
+            // Busca a coleção do usuário
+            Colecao minhaColecao = colecaoService.obterOuCriarColecaoDoUsuario(usuarioLogado.getIdUsuario());
+            
+            // Coloca dentro de uma lista para manter o padrão do nome "ListarColecoes"
+            List<Colecao> listaDeColecoes = new ArrayList<>();
+            if (minhaColecao != null) {
+                listaDeColecoes.add(minhaColecao);
+            }
+
+            // Envia a lista para a view
+            request.setAttribute("perfilUsuario", usuarioLogado);
+            request.setAttribute("abaAtual", "colecao");
+            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
+            request.setAttribute("colecoes", listaDeColecoes);
+            request.setAttribute("colecao", java.util.Collections.emptyList());
+            request.setAttribute("totalDiscos", 0);
+            request.setAttribute("totalReviews", 0);
+            request.setAttribute("totalFavoritos", 0);
+            
+            // Despacha para a página que exibe os cards de coleções
+            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("mensagemErro", "Erro ao carregar suas coleções.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        }
+    }
+}
