@@ -34,7 +34,6 @@ public class DiscogsService {
     }
 
 
-    private static final String TOKEN = "BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt"; 
     private static final String API_URL = "https://api.discogs.com/database/search";
     private static final String API_URL2 = "https://api.discogs.com";
     /**
@@ -59,7 +58,7 @@ public class DiscogsService {
         //page e per_page na URL
         String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release"
                            + "&page=" + paginaSolicitada + "&per_page=50"
-                           + "&token=" + TOKEN;
+                           + "&token=" + ApiConfig.DISCOGS_TOKEN;
         System.out.println("URL COMPLETA: " + urlCompleta);
         // faz a chamada HTTP usando o HttpClient nativo do Java 11+
         HttpClient client = HttpClient.newHttpClient();
@@ -163,7 +162,7 @@ public class DiscogsService {
     public List<Faixa> buscarTracklist(int discogsId) throws Exception {
         List<Faixa> tracklist = new ArrayList<>();
 
-        String urlCompleta = API_URL2 + "/releases/" + discogsId + "?token=" + TOKEN;
+        String urlCompleta = API_URL2 + "/releases/" + discogsId + "?token=" + ApiConfig.DISCOGS_TOKEN;
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
