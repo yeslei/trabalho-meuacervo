@@ -69,6 +69,33 @@
             </c:otherwise>
         </c:choose>
     </div>
+
+    <c:if test="${not empty discos}">
+        <div class="pagination">
+            <span class="pagination-info">
+                Pagina ${paginaAtual} de ${totalPaginas}
+                <c:if test="${totalItens gt 0}">
+                    (Total: ${totalItens})
+                </c:if>
+            </span>
+            <div class="pagination-links">
+                <c:if test="${temAnterior}">
+                    <c:url var="paginaAnteriorUrl" value="/buscar-discos">
+                        <c:param name="q" value="${termoBusca}"/>
+                        <c:param name="page" value="${paginaAtual - 1}"/>
+                    </c:url>
+                    <a href="${paginaAnteriorUrl}">Anterior</a>
+                </c:if>
+                <c:if test="${temProxima}">
+                    <c:url var="paginaProximaUrl" value="/buscar-discos">
+                        <c:param name="q" value="${termoBusca}"/>
+                        <c:param name="page" value="${paginaAtual + 1}"/>
+                    </c:url>
+                    <a href="${paginaProximaUrl}">Proxima</a>
+                </c:if>
+            </div>
+        </div>
+    </c:if>
 </main>
 
 </body>

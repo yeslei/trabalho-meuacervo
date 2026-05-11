@@ -24,6 +24,15 @@ import java.util.List;
  */
 public class DiscogsService {
 
+    public static record ResultadoBusca(
+            List<Disco> discos,
+            int paginaAtual,
+            int totalPaginas,
+            int totalItens,
+            int itensPorPagina
+    ) {
+    }
+
 
     private static final String TOKEN = "BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt"; 
     private static final String API_URL = "https://api.discogs.com/database/search";
@@ -36,14 +45,20 @@ public class DiscogsService {
     }
     //parâmetro 'pagina' para controlar a paginação da API
     public List<Disco> buscarDiscosPorTermo(String termo, int pagina) throws Exception {
+        return buscarDiscosPorTermoPaginado(termo, pagina).discos();
+    }
+
+    //parâmetro 'pagina' para controlar a paginação da API
+    public ResultadoBusca buscarDiscosPorTermoPaginado(String termo, int pagina) throws Exception {
+        int paginaSolicitada = pagina < 1 ? 1 : pagina;
         List<Disco> listaDiscos = new ArrayList<>();
 
         //prepara a URL com paginação
         String encodedQuery = URLEncoder.encode(termo, StandardCharsets.UTF_8);
-        
+
         //page e per_page na URL
-        String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release" 
-                           + "&page=" + pagina + "&per_page=50" 
+        String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release"
+                           + "&page=" + paginaSolicitada + "&per_page=50"
                            + "&token=" + TOKEN;
         System.out.println("URL COMPLETA: " + urlCompleta);
         // faz a chamada HTTP usando o HttpClient nativo do Java 11+
@@ -58,7 +73,7 @@ public class DiscogsService {
 
         // Verifica se a API respondeu com sucesso (Status 200 OK)
         if (response.statusCode() == 200) {
-            
+
             // Transformação (Parse) do JSON para Objetos Java usando GSON
             JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
             JsonArray results = jsonObject.getAsJsonArray("results");
@@ -112,11 +127,34 @@ public class DiscogsService {
 
                 listaDiscos.add(disco);
             }
+
+            int paginaAtual = paginaSolicitada;
+            int totalPaginas = 1;
+            int totalItens = listaDiscos.size();
+            int itensPorPagina = listaDiscos.size();
+            if (jsonObject.has("pagination") && jsonObject.get("pagination").isJsonObject()) {
+                JsonObject pagination = jsonObject.getAsJsonObject("pagination");
+                paginaAtual = getIntOrDefault(pagination, "page", paginaSolicitada);
+                totalPaginas = Math.max(1, getIntOrDefault(pagination, "pages", 1));
+                totalItens = Math.max(0, getIntOrDefault(pagination, "items", totalItens));
+                itensPorPagina = Math.max(0, getIntOrDefault(pagination, "per_page", itensPorPagina));
+            }
+
+            return new ResultadoBusca(listaDiscos, paginaAtual, totalPaginas, totalItens, itensPorPagina);
         } else {
             throw new Exception("Erro ao consultar Discogs. Status: " + response.statusCode());
         }
+    }
 
-        return listaDiscos;
+    private int getIntOrDefault(JsonObject jsonObject, String key, int fallback) {
+        if (jsonObject == null || !jsonObject.has(key) || jsonObject.get(key).isJsonNull()) {
+            return fallback;
+        }
+        try {
+            return jsonObject.get(key).getAsInt();
+        } catch (Exception ignored) {
+            return fallback;
+        }
     }
 
     /**

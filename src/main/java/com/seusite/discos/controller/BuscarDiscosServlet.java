@@ -21,29 +21,65 @@ public class BuscarDiscosServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String termo = request.getParameter("q");
         String paginaStr = request.getParameter("page");
-        
-        int pagina = (paginaStr == null || paginaStr.isEmpty()) ? 1 : Integer.parseInt(paginaStr);
+        String erroParam = request.getParameter("erro");
+
+        String erroMsg = null;
+        if (erroParam != null && !erroParam.trim().isEmpty()) {
+            if ("disco-invalido".equals(erroParam)) {
+                erroMsg = "Disco invalido para abrir.";
+            } else if ("banco".equals(erroParam)) {
+                erroMsg = "Erro ao acessar o banco de dados.";
+            } else {
+                erroMsg = "Erro ao processar a solicitacao.";
+            }
+        }
+
+        int pagina = 1;
+        if (paginaStr != null && !paginaStr.trim().isEmpty()) {
+            try {
+                pagina = Integer.parseInt(paginaStr.trim());
+            } catch (NumberFormatException ignored) {
+                pagina = 1;
+            }
+        }
+        if (pagina < 1) {
+            pagina = 1;
+        }
 
         if (termo != null && !termo.trim().isEmpty()) {
             try {
                 // Chama o service que já testado no main
-                List<Disco> resultados = discogsService.buscarDiscosPorTermo(termo, pagina);
+                DiscogsService.ResultadoBusca resultado = discogsService.buscarDiscosPorTermoPaginado(termo, pagina);
+                List<Disco> resultados = resultado.discos();
+                int paginaAtual = resultado.paginaAtual();
+                int totalPaginas = Math.max(resultado.totalPaginas(), 1);
+                boolean temAnterior = paginaAtual > 1;
+                boolean temProxima = paginaAtual < totalPaginas;
                 
                 // Pendura a lista e os metadados na requisição para o JSP usar
                 request.setAttribute("discos", resultados);
                 request.setAttribute("termoBusca", termo);
-                request.setAttribute("paginaAtual", pagina);
+                request.setAttribute("paginaAtual", paginaAtual);
+                request.setAttribute("totalPaginas", totalPaginas);
+                request.setAttribute("totalItens", resultado.totalItens());
+                request.setAttribute("itensPorPagina", resultado.itensPorPagina());
+                request.setAttribute("temAnterior", temAnterior);
+                request.setAttribute("temProxima", temProxima);
+                if (erroMsg != null) {
+                    request.setAttribute("erro", erroMsg);
+                }
                 
                 // Redireciona para a página de resultados
                 request.getRequestDispatcher("/busca.jsp").forward(request, response);
                 
             } catch (Exception e) {
-                request.setAttribute("erro", "Erro ao consultar a API: " + e.getMessage());
-                request.getRequestDispatcher("/busca.jsp").forward(request, response);
+                e.printStackTrace();
+                request.getSession().setAttribute("mensagemErro", "Erro ao consultar a API: " + e.getMessage());
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
             }
         } else {
             // Se não houver busca, apenas volta para a home ou exibe vazio
-            response.sendRedirect("index.jsp");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }

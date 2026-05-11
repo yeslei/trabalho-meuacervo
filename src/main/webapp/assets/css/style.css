@@ -87,6 +87,42 @@ img {
   gap: 1.25rem;
 }
 
+.pagination {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--secondary-text);
+}
+
+.pagination-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination a {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background-color: var(--bg-card);
+  color: var(--primary-text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.pagination a:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--primary-accent);
+  border-color: var(--primary-accent);
+}
+
 /* ==========================================================================
    Top header (presente em todas as páginas internas)
    ========================================================================== */
