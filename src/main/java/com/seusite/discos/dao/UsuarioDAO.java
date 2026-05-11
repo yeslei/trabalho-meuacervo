@@ -77,13 +77,36 @@ public class UsuarioDAO {
         }
     }
 
-    public boolean usernameExiste(String email) throws SQLException {
+    public Usuario buscarPorId(int id) throws SQLException {
+        String sql = "SELECT id_usuario, nome, email, senha, username, data_criacao FROM usuario WHERE id_usuario = ?";
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = new Usuario();
+                    usuario.setIdUsuario(rs.getInt("id_usuario"));
+                    usuario.setNome(rs.getString("nome"));
+                    usuario.setEmail(rs.getString("email"));
+                    usuario.setSenha(rs.getString("senha"));
+                    usuario.setUsername(rs.getString("username"));
+                    if (rs.getTimestamp("data_criacao") != null) {
+                        usuario.setDataCriacao(rs.getTimestamp("data_criacao").toLocalDateTime());
+                    }
+                    return usuario;
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean usernameExiste(String username) throws SQLException {
         String sql = "SELECT COUNT(*) FROM usuario WHERE username = ?";
 
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, email);
+            stmt.setString(1, username);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next();

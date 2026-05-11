@@ -42,6 +42,17 @@ public class WishlistDAO {
         }
     }
 
+    public boolean existe(int idUsuario, int idDisco) throws SQLException {
+        String sql = "SELECT 1 FROM wishlist WHERE id_usuario = ? AND id_disco = ? LIMIT 1";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idUsuario);
+            stmt.setInt(2, idDisco);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     // lista todos os discos da wishlist de um usuário específico
     public List<Disco> listarPorUsuario(int idUsuario) throws SQLException {
         List<Disco> discos = new ArrayList<>();
@@ -84,5 +95,15 @@ public class WishlistDAO {
         }
         
         return discos; // Retorna a lista pronta para a tela exibir
+    }
+
+    public int contarPorUsuario(int idUsuario) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM wishlist WHERE id_usuario = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idUsuario);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
     }
 }
