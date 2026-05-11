@@ -3,8 +3,10 @@ package com.seusite.discos.controller;
 import com.seusite.discos.model.Colecao;
 import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
+import com.seusite.discos.service.AvaliacaoService;
 import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.DiscogsService;
+import com.seusite.discos.service.WishlistService;
 import com.seusite.discos.dao.ItemColecaoDAO;
 import com.seusite.discos.config.ConnectionFactory;
 
@@ -23,6 +25,8 @@ public class VerColecaoServlet extends HttpServlet {
 
     private ColecaoService colecaoService = new ColecaoService();
     private DiscogsService discogsService = new DiscogsService();
+    private AvaliacaoService avaliacaoService = new AvaliacaoService();
+    private WishlistService wishlistService = new WishlistService();
 
     @Override
     // recebe requisições GET, verifica o usuário logado, chama o serviço para obter ou criar a coleção e encaminha os dados para um JSP de visualização
@@ -32,6 +36,7 @@ public class VerColecaoServlet extends HttpServlet {
 
         // verificação de Segurança 
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -47,8 +52,15 @@ public class VerColecaoServlet extends HttpServlet {
                 List<Disco> meusDiscos = itemDAO.listarDiscosDaColecao(colecao.getIdColecao());
 
                 // envia dados para o JSP
-                request.setAttribute("colecao", colecao);
-                request.setAttribute("listaDiscos", meusDiscos);
+                request.setAttribute("usuarioPerfil", usuarioLogado);
+                request.setAttribute("abaAtiva", "colecao");
+                request.setAttribute("ehProprioPerfil", Boolean.TRUE);
+                request.setAttribute("colecao", meusDiscos);
+                int totalReviews = avaliacaoService.contarReviews(usuarioLogado.getIdUsuario());
+                int totalFavoritos = wishlistService.contarWishlist(usuarioLogado.getIdUsuario());
+                request.setAttribute("totalDiscos", meusDiscos.size());
+                request.setAttribute("totalReviews", totalReviews);
+                request.setAttribute("totalFavoritos", totalFavoritos);
                 
                 // Verifica se há busca de discos
                 String buscar = request.getParameter("buscar");
@@ -65,12 +77,13 @@ public class VerColecaoServlet extends HttpServlet {
                 }
                 
                 //despacha para a página visual
-                request.getRequestDispatcher("/minha-colecao.jsp").forward(request, response);
+                request.getRequestDispatcher("/perfil.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao carregar sua coleção.");
+            session.setAttribute("mensagemErro", "Erro ao carregar sua coleção.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }

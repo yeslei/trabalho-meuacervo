@@ -57,7 +57,7 @@ public class ListarFeedServlet extends HttpServlet {
             request.setAttribute("temProxima", fp.temProxima());
             request.setAttribute("idDiscoFiltro", idDisco);
             request.setAttribute("usuarioLogado", usuario);
-            request.getRequestDispatcher("/feed.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.jsp").forward(request, response);
         } catch (SQLException e) {
             e.printStackTrace();
             request.setAttribute("posts", Collections.emptyList());
@@ -65,7 +65,7 @@ public class ListarFeedServlet extends HttpServlet {
             request.setAttribute("temProxima", Boolean.FALSE);
             request.setAttribute("usuarioLogado", usuario);
             request.setAttribute("mensagemErro", "banco");
-            request.getRequestDispatcher("/feed.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.jsp").forward(request, response);
         }
     }
 }

@@ -2,6 +2,8 @@ package com.seusite.discos.controller;
 
 import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
+import com.seusite.discos.service.AvaliacaoService;
+import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.WishlistService;
 
 import jakarta.servlet.ServletException;
@@ -20,6 +22,8 @@ import java.util.List;
 public class ListarWishlistServlet extends HttpServlet {
 
     private final WishlistService wishlistService = new WishlistService();
+    private final AvaliacaoService avaliacaoService = new AvaliacaoService();
+    private final ColecaoService colecaoService = new ColecaoService();
 
     @Override
     // Recebe requisições GET, verifica o usuário logado, chama o serviço para obter a wishlist e encaminha os dados para um JSP de visualização
@@ -27,6 +31,7 @@ public class ListarWishlistServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -35,15 +40,26 @@ public class ListarWishlistServlet extends HttpServlet {
             // Busca a coleção de desejos baseada na inteligência do Service/DAO
             List<Disco> minhaWishlist = wishlistService.listarWishlistDoUsuario(usuarioLogado.getIdUsuario());
 
-            request.setAttribute("listaDesejos", minhaWishlist);
+            request.setAttribute("usuarioPerfil", usuarioLogado);
+            request.setAttribute("abaAtiva", "favoritos");
+            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
+            request.setAttribute("favoritos", minhaWishlist);
+            request.setAttribute("colecao", java.util.Collections.emptyList());
+            request.setAttribute("reviews", java.util.Collections.emptyList());
+            int totalDiscos = colecaoService.contarDiscosNaColecao(usuarioLogado.getIdUsuario());
+            int totalReviews = avaliacaoService.contarReviews(usuarioLogado.getIdUsuario());
+            request.setAttribute("totalDiscos", totalDiscos);
+            request.setAttribute("totalReviews", totalReviews);
+            request.setAttribute("totalFavoritos", minhaWishlist.size());
             
             // Repassa para a View fazer o trabalho visual
-            request.getRequestDispatcher("/wishlist.jsp").forward(request, response);
+            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            // Erro 500 elegante no lugar de uma tela branca ou stacktrace vazando
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Não foi possível carregar a sua lista de desejos no momento.");
+            // Redirecionamento com mensagem de erro na sessão para evitar tela de erro do servidor
+            session.setAttribute("mensagemErro", "Não foi possível carregar a sua lista de desejos no momento.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }

@@ -42,29 +42,16 @@ public class BuscarDiscosServlet extends HttpServlet {
                 pagina = 1;
             }
         }
-        if (pagina < 1) {
-            pagina = 1;
-        }
 
         if (termo != null && !termo.trim().isEmpty()) {
             try {
                 // Chama o service que já testado no main
-                DiscogsService.ResultadoBusca resultado = discogsService.buscarDiscosPorTermoPaginado(termo, pagina);
-                List<Disco> resultados = resultado.discos();
-                int paginaAtual = resultado.paginaAtual();
-                int totalPaginas = Math.max(resultado.totalPaginas(), 1);
-                boolean temAnterior = paginaAtual > 1;
-                boolean temProxima = paginaAtual < totalPaginas;
+                List<Disco> resultados = discogsService.buscarDiscosPorTermo(termo, pagina);
                 
                 // Pendura a lista e os metadados na requisição para o JSP usar
                 request.setAttribute("discos", resultados);
                 request.setAttribute("termoBusca", termo);
-                request.setAttribute("paginaAtual", paginaAtual);
-                request.setAttribute("totalPaginas", totalPaginas);
-                request.setAttribute("totalItens", resultado.totalItens());
-                request.setAttribute("itensPorPagina", resultado.itensPorPagina());
-                request.setAttribute("temAnterior", temAnterior);
-                request.setAttribute("temProxima", temProxima);
+                request.setAttribute("paginaAtual", pagina);
                 if (erroMsg != null) {
                     request.setAttribute("erro", erroMsg);
                 }
