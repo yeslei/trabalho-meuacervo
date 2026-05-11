@@ -27,6 +27,7 @@ public class ListarColecoesServlet extends HttpServlet {
         Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
 
         if (usuarioLogado == null) {
+            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -42,14 +43,22 @@ public class ListarColecoesServlet extends HttpServlet {
             }
 
             // Envia a lista para a view
+            request.setAttribute("perfilUsuario", usuarioLogado);
+            request.setAttribute("abaAtual", "colecao");
+            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
             request.setAttribute("colecoes", listaDeColecoes);
+            request.setAttribute("colecao", java.util.Collections.emptyList());
+            request.setAttribute("totalDiscos", 0);
+            request.setAttribute("totalReviews", 0);
+            request.setAttribute("totalFavoritos", 0);
             
             // Despacha para a página que exibe os cards de coleções
-            request.getRequestDispatcher("/listar-colecoes.jsp").forward(request, response);
+            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Erro ao carregar suas coleções.");
+            session.setAttribute("mensagemErro", "Erro ao carregar suas coleções.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
 }

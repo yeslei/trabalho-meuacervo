@@ -1,6 +1,5 @@
 package com.seusite.discos.controller;
 
-import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.ColecaoService;
 
@@ -15,41 +14,41 @@ import java.io.IOException;
 @WebServlet("/colecao/adicionar")
 public class AdicionarDiscoColecaoServlet extends HttpServlet {
 
-    private ColecaoService colecaoService = new ColecaoService();
+    private final ColecaoService colecaoService = new ColecaoService();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-        //só adiciona se estiver logado
-        if (usuarioLogado == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+        HttpSession session = request.getSession(false);
+        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
+        if (usuario == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?erro=nao-autenticado");
             return;
         }
 
+        int idDisco;
         try {
-            // captura os dados vindos do formulário no JSP
-            Disco disco = new Disco();
-            disco.setDiscogsId(Integer.parseInt(request.getParameter("discogsId")));
-            disco.setTitulo(request.getParameter("titulo"));
-            disco.setArtista(request.getParameter("artista"));
-            disco.setAnoLancamento(Integer.parseInt(request.getParameter("ano")));
-            disco.setGenero(request.getParameter("genero"));
-            disco.setFormato(request.getParameter("formato"));
-            disco.setImagemCapa(request.getParameter("capa"));
+            idDisco = Integer.parseInt(request.getParameter("id_disco").trim());
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            return;
+        }
 
-            String estado = request.getParameter("estado");
-            String obs = request.getParameter("observacao");
+        String acao = request.getParameter("acao");
+        String estado = request.getParameter("estado");
+        String obs = request.getParameter("observacao");
 
-            // service já cuida de criar a coleção se não existir
-            colecaoService.adicionarDiscoNaColecaoUnica(usuarioLogado.getIdUsuario(), disco, estado, obs);
-
-            response.sendRedirect(request.getContextPath() + "/colecao/ver");
-
+        try {
+            if ("remover".equals(acao)) {
+                colecaoService.removerDaColecaoUnica(usuario.getIdUsuario(), idDisco);
+            } else {
+                colecaoService.adicionarPorId(usuario.getIdUsuario(), idDisco, estado, obs);
+            }
+            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco);
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/busca.jsp?erro=falha_ao_adicionar");
+            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=banco");
         }
     }
 }

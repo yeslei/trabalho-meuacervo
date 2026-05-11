@@ -12,6 +12,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/cadastro")
 public class CadastroServlet extends HttpServlet {
@@ -22,35 +23,49 @@ public class CadastroServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String nome = request.getParameter("nome");
-        String email = request.getParameter("email");
-        String senha = request.getParameter("senha");
+        String nome     = request.getParameter("nome");
+        String email    = request.getParameter("email");
+        String senha    = request.getParameter("senha");
         String username = request.getParameter("username");
 
-        // Validação de campos
         if (ValidadorUtil.campoVazio(nome) || ValidadorUtil.campoVazio(email) || ValidadorUtil.campoVazio(senha)) {
-            response.sendRedirect("cadastro.jsp?erro=campos-vazios");
+            response.sendRedirect(request.getContextPath() + "/cadastro.jsp?erro=campos-vazios");
             return;
         }
 
         if (!ValidadorUtil.emailValido(email)) {
-            response.sendRedirect("cadastro.jsp?erro=email-invalido");
+            response.sendRedirect(request.getContextPath() + "/cadastro.jsp?erro=email-invalido");
+            return;
+        }
+
+        if (senha.length() < 8) {
+            response.sendRedirect(request.getContextPath() + "/cadastro.jsp?erro=senha-curta");
             return;
         }
 
         Usuario usuario = new Usuario();
-        usuario.setNome(nome);
-        usuario.setEmail(email);
+        usuario.setNome(nome.trim());
+        usuario.setEmail(email.trim());
         usuario.setSenha(senha);
-        usuario.setUsername(username);
+        usuario.setUsername(username == null ? null : username.trim());
 
         try {
             authService.cadastrarUsuario(usuario);
-            response.sendRedirect("login.jsp?sucesso=cadastro-realizado");
-
+            Usuario criado = authService.autenticarUsuario(email.trim(), senha);
+            if (criado != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("usuarioLogado", criado);
+                session.setMaxInactiveInterval(60 * 30);
+                response.sendRedirect(request.getContextPath() + "/home");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/login.jsp?sucesso=cadastro-realizado");
+            }
+        } catch (IllegalArgumentException e) {
+            String codigo = e.getMessage() == null ? "banco" : e.getMessage();
+            response.sendRedirect(request.getContextPath() + "/cadastro.jsp?erro=" + codigo);
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect("cadastro.jsp?erro=usuario-existente");
+            response.sendRedirect(request.getContextPath() + "/cadastro.jsp?erro=banco");
         }
     }
 }

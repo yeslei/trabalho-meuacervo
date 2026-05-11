@@ -47,7 +47,7 @@ public class CriarColecaoServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             session.setAttribute("mensagemErro", "Erro ao criar/configurar a coleção.");
-            response.sendRedirect(request.getContextPath() + "/form-colecao.jsp");
+            response.sendRedirect(request.getContextPath() + "/colecao/ver");
         }
     }
 }
