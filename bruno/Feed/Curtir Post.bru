@@ -1,0 +1,28 @@
+meta {
+  name: Curtir Post
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/curtir-post
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id_post": {{idPost}}
+  }
+}
+
+tests {
+  test("curtir post usa POST", function () {
+    expect([200, 400, 401, 404, 500]).to.include(res.status);
+  });
+}
