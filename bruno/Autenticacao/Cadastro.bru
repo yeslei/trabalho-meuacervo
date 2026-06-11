@@ -1,0 +1,31 @@
+meta {
+  name: Cadastro
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/cadastro
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "nome": "{{nome}}",
+    "username": "{{username}}",
+    "email": "{{email}}",
+    "senha": "{{senha}}"
+  }
+}
+
+tests {
+  test("responde JSON", function () {
+    expect(res.headers.get("content-type")).to.include("application/json");
+  });
+}
