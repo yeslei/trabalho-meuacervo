@@ -10,19 +10,27 @@ import com.seusite.discos.service.AvaliacaoService;
 import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.DiscogsService;
 import com.seusite.discos.service.WishlistService;
+import com.seusite.discos.util.JsonUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+/**
+ * /avaliar-disco
+ *   GET  ?id_disco=X  — detalhes do disco + estatisticas + reviews + faixas + flags.
+ *   POST              — cria/registra a avaliacao do usuario (corpo JSON).
+ *   PUT               — atualiza a avaliacao do usuario (mesmo upsert do service).
+ */
 @WebServlet("/avaliar-disco")
 public class AvaliarDiscoServlet extends HttpServlet {
 
@@ -32,111 +40,85 @@ public class AvaliarDiscoServlet extends HttpServlet {
     private final WishlistService wishlistService = new WishlistService();
     private final DiscogsService discogsService = new DiscogsService();
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public static class AvaliacaoRequest {
+        public Integer id_disco;
+        public Integer nota;
+        public String comentario;
+    }
 
-        HttpSession session = request.getSession(false);
-        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?erro=nao-autenticado");
-            return;
-        }
+    private Usuario logado(HttpServletRequest request) {
+        HttpSession s = request.getSession(false);
+        return s == null ? null : (Usuario) s.getAttribute("usuarioLogado");
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Usuario usuario = logado(request);
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
 
         int idDisco;
-        try {
-            idDisco = Integer.parseInt(request.getParameter("id_disco").trim());
-        } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
-        }
+        try { idDisco = Integer.parseInt(request.getParameter("id_disco").trim()); }
+        catch (Exception e) { JsonUtil.erro(response, 400, "id-invalido", "id_disco invalido."); return; }
 
         try {
             Disco disco = discoDAO.buscarPorId(idDisco);
-            if (disco == null) {
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
-                return;
-            }
-            request.setAttribute("disco", disco);
+            if (disco == null) { JsonUtil.erro(response, 404, "disco-inexistente", "Disco nao encontrado."); return; }
 
-            // estatísticas de avaliação (média e total)
             EstatisticaDisco estatistica = avaliacaoService.buscarEstatisticas(idDisco);
-            request.setAttribute("estatistica", estatistica);
-
-            // nota atual do usuário logado para este disco
             Integer notaUsuario = avaliacaoService.buscarNota(usuario.getIdUsuario(), idDisco);
-            request.setAttribute("notaUsuario", notaUsuario);
-
-            // lista de avaliações com username para os cards de comentários
             List<AvaliacaoDisco> reviews = avaliacaoService.buscarReviews(idDisco);
-            request.setAttribute("reviews", reviews);
-
-            // verifica se o disco já está na coleção do usuário
             boolean estaNaColecao = colecaoService.possuiDisco(usuario.getIdUsuario(), idDisco);
-            request.setAttribute("estaNaColecao", estaNaColecao);
-
-            // verifica se o disco já está na wishlist do usuário
             boolean estaNaWishlist = wishlistService.possuiDisco(usuario.getIdUsuario(), idDisco);
-            request.setAttribute("estaNaWishlist", estaNaWishlist);
 
-            // tracklist via API do Discogs (não crítico — falha silenciosa)
+            List<Faixa> faixas = Collections.emptyList();
             if (disco.getDiscogsId() != null) {
-                try {
-                    List<Faixa> faixas = discogsService.buscarTracklist(disco.getDiscogsId());
-                    request.setAttribute("faixas", faixas);
-                } catch (Exception e) {
-                    request.setAttribute("faixas", Collections.emptyList());
-                }
-            } else {
-                request.setAttribute("faixas", Collections.emptyList());
+                try { faixas = discogsService.buscarTracklist(disco.getDiscogsId()); }
+                catch (Exception ignored) { /* nao-critico */ }
             }
 
-            request.getRequestDispatcher("/detalhes.jsp").forward(request, response);
-
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("disco", disco);
+            corpo.put("estatistica", estatistica);
+            corpo.put("notaUsuario", notaUsuario);
+            corpo.put("reviews", reviews);
+            corpo.put("estaNaColecao", estaNaColecao);
+            corpo.put("estaNaWishlist", estaNaWishlist);
+            corpo.put("faixas", faixas);
+            JsonUtil.ok(response, corpo);
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=banco");
+            JsonUtil.erro(response, 500, "banco", "Erro ao carregar o disco.");
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        salvar(request, response);
+    }
 
-        HttpSession session = request.getSession(false);
-        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?erro=nao-autenticado");
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        salvar(request, response); // o service ja faz upsert (salvarOuAtualizar)
+    }
+
+    private void salvar(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Usuario usuario = logado(request);
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
+
+        AvaliacaoRequest dados = JsonUtil.lerCorpo(request, AvaliacaoRequest.class);
+        if (dados == null || dados.id_disco == null || dados.nota == null) {
+            JsonUtil.erro(response, 400, "campos-vazios", "id_disco e nota sao obrigatorios.");
             return;
         }
 
-        int idDisco;
         try {
-            idDisco = Integer.parseInt(request.getParameter("id_disco").trim());
-        } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
-            return;
-        }
-
-        int nota;
-        try {
-            nota = Integer.parseInt(request.getParameter("nota").trim());
-        } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=nota-invalida");
-            return;
-        }
-
-        String comentario = request.getParameter("comentario");
-
-        try {
-            avaliacaoService.salvarAvaliacao(usuario.getIdUsuario(), idDisco, nota, comentario);
-            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&sucesso=avaliado");
+            avaliacaoService.salvarAvaliacao(usuario.getIdUsuario(), dados.id_disco, dados.nota, dados.comentario);
+            JsonUtil.sucesso(response, "Avaliacao registrada.");
         } catch (IllegalArgumentException e) {
-            String codigo = e.getMessage() == null ? "validacao" : e.getMessage();
-            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=" + codigo);
+            JsonUtil.erro(response, 400, e.getMessage() == null ? "validacao" : e.getMessage(), "Dados invalidos.");
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/avaliar-disco?id_disco=" + idDisco + "&erro=banco");
+            JsonUtil.erro(response, 500, "banco", "Erro ao salvar a avaliacao.");
         }
     }
 }
