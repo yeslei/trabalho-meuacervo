@@ -2,51 +2,49 @@ package com.seusite.discos.controller;
 
 import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.WishlistService;
+import com.seusite.discos.util.JsonUtil;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-// Servlet para remover um disco da wishlist do usuário logado
 
+/** DELETE /wishlist/remover?idDisco=X — alias de remocao da wishlist. */
 @WebServlet("/wishlist/remover")
 public class RemoverWishlistServlet extends HttpServlet {
 
     private final WishlistService wishlistService = new WishlistService();
 
     @Override
-    // Recebe requisições POST para remover um disco da wishlist, verifica o usuário logado, valida o ID do disco e chama o serviço para realizar a remoção
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        // se não estiver logado, bloqueia a execução imediatamente
-        if (usuarioLogado == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Acesso negado.");
-            return;
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        remover(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        remover(request, response);
+    }
+
+    private void remover(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession s = request.getSession(false);
+        Usuario usuario = s == null ? null : (Usuario) s.getAttribute("usuarioLogado");
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
+
+        String idStr = request.getParameter("idDisco");
+        if (idStr == null || idStr.isEmpty()) {
+            JsonUtil.erro(response, 400, "id-invalido", "idDisco obrigatorio."); return;
         }
-        // validação defensiva do ID do disco a ser removido
         try {
-            String idDiscoStr = request.getParameter("idDisco");
-            if (idDiscoStr == null || idDiscoStr.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "ID do disco não fornecido.");
-                return;
-            }
-
-            int idDiscoInterno = Integer.parseInt(idDiscoStr);
-
-            // chama o Service usando o ID da tabela 'disco', não da API Discogs
-            wishlistService.removerDiscoDaWishlist(usuarioLogado.getIdUsuario(), idDiscoInterno);
-
-            session.setAttribute("mensagemSucesso", "Disco removido da Wishlist.");
-            response.sendRedirect(request.getContextPath() + "/wishlist/listar");
-
+            int idDisco = Integer.parseInt(idStr.trim());
+            wishlistService.removerDiscoDaWishlist(usuario.getIdUsuario(), idDisco);
+            JsonUtil.sucesso(response, "Disco removido dos favoritos.");
+        } catch (NumberFormatException e) {
+            JsonUtil.erro(response, 400, "id-invalido", "idDisco invalido.");
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("mensagemErro", "Falha ao remover o disco.");
-            response.sendRedirect(request.getContextPath() + "/wishlist/listar");
+            JsonUtil.erro(response, 500, "banco", "Falha ao remover o disco.");
         }
     }
 }
