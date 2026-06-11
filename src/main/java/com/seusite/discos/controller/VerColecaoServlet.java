@@ -5,12 +5,11 @@ import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.AvaliacaoService;
 import com.seusite.discos.service.ColecaoService;
-import com.seusite.discos.service.DiscogsService;
 import com.seusite.discos.service.WishlistService;
 import com.seusite.discos.dao.ItemColecaoDAO;
 import com.seusite.discos.config.ConnectionFactory;
+import com.seusite.discos.util.JsonUtil;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,72 +17,40 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.LinkedHashMap;
 import java.util.List;
-// Servlet para exibir a coleção do usuário logado, garantindo que cada usuário tenha apenas uma coleção principal
+import java.util.Map;
+
+/** GET /colecao/ver — discos da colecao do usuario + contadores do perfil. */
 @WebServlet("/colecao/ver")
 public class VerColecaoServlet extends HttpServlet {
 
-    private ColecaoService colecaoService = new ColecaoService();
-    private DiscogsService discogsService = new DiscogsService();
-    private AvaliacaoService avaliacaoService = new AvaliacaoService();
-    private WishlistService wishlistService = new WishlistService();
+    private final ColecaoService colecaoService = new ColecaoService();
+    private final AvaliacaoService avaliacaoService = new AvaliacaoService();
+    private final WishlistService wishlistService = new WishlistService();
 
     @Override
-    // recebe requisições GET, verifica o usuário logado, chama o serviço para obter ou criar a coleção e encaminha os dados para um JSP de visualização
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-
-        // verificação de Segurança 
-        if (usuarioLogado == null) {
-            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
 
         try {
-            // chama o Service para obter a coleção (ou criar se for nova)
-            Colecao colecao = colecaoService.obterOuCriarColecaoDoUsuario(usuarioLogado.getIdUsuario());
-
-            //busca os discos que estão dentro dessa coleção
-            // DAO de itens pega a lista completa
+            Colecao colecao = colecaoService.obterOuCriarColecaoDoUsuario(usuario.getIdUsuario());
             try (Connection conn = ConnectionFactory.getConnection()) {
                 ItemColecaoDAO itemDAO = new ItemColecaoDAO(conn);
                 List<Disco> meusDiscos = itemDAO.listarDiscosDaColecao(colecao.getIdColecao());
 
-                // envia dados para o JSP
-                request.setAttribute("usuarioPerfil", usuarioLogado);
-                request.setAttribute("abaAtiva", "colecao");
-                request.setAttribute("ehProprioPerfil", Boolean.TRUE);
-                request.setAttribute("colecao", meusDiscos);
-                int totalReviews = avaliacaoService.contarReviews(usuarioLogado.getIdUsuario());
-                int totalFavoritos = wishlistService.contarWishlist(usuarioLogado.getIdUsuario());
-                request.setAttribute("totalDiscos", meusDiscos.size());
-                request.setAttribute("totalReviews", totalReviews);
-                request.setAttribute("totalFavoritos", totalFavoritos);
-                
-                // Verifica se há busca de discos
-                String buscar = request.getParameter("buscar");
-                String termoBusca = request.getParameter("q");
-                
-                if (buscar != null && termoBusca != null && !termoBusca.trim().isEmpty()) {
-                    try {
-                        List<Disco> resultados = discogsService.buscarDiscosPorTermo(termoBusca.trim(), 1);
-                        request.setAttribute("resultados", resultados);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        request.setAttribute("resultados", java.util.Collections.emptyList());
-                    }
-                }
-                
-                //despacha para a página visual
-                request.getRequestDispatcher("/perfil.jsp").forward(request, response);
+                Map<String, Object> corpo = new LinkedHashMap<>();
+                corpo.put("colecao", meusDiscos);
+                corpo.put("totalDiscos", meusDiscos.size());
+                corpo.put("totalReviews", avaliacaoService.contarReviews(usuario.getIdUsuario()));
+                corpo.put("totalFavoritos", wishlistService.contarWishlist(usuario.getIdUsuario()));
+                JsonUtil.ok(response, corpo);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("mensagemErro", "Erro ao carregar sua coleção.");
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            JsonUtil.erro(response, 500, "banco", "Erro ao carregar a colecao.");
         }
     }
 }
