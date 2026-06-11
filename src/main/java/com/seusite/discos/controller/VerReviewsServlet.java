@@ -5,16 +5,19 @@ import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.AvaliacaoService;
 import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.WishlistService;
+import com.seusite.discos.util.JsonUtil;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+/** GET /perfil/reviews — reviews escritas pelo usuario + contadores. */
 @WebServlet("/perfil/reviews")
 public class VerReviewsServlet extends HttpServlet {
 
@@ -23,37 +26,24 @@ public class VerReviewsServlet extends HttpServlet {
     private final ColecaoService colecaoService = new ColecaoService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
-        Usuario usuarioLogado = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
-        if (usuarioLogado == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?erro=nao-autenticado");
-            return;
-        }
+        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
 
         try {
-            int idUsuario = usuarioLogado.getIdUsuario();
+            int idUsuario = usuario.getIdUsuario();
             List<AvaliacaoDisco> reviews = avaliacaoService.buscarReviewsDoUsuario(idUsuario);
-            int totalReviews = reviews.size();
-            int totalFavoritos = wishlistService.contarWishlist(idUsuario);
-            int totalDiscos = colecaoService.contarDiscosNaColecao(idUsuario);
 
-            request.setAttribute("usuarioPerfil", usuarioLogado);
-            request.setAttribute("abaAtiva", "reviews");
-            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
-            request.setAttribute("reviews", reviews);
-            request.setAttribute("colecao", java.util.Collections.emptyList());
-            request.setAttribute("favoritos", java.util.Collections.emptyList());
-            request.setAttribute("totalDiscos", totalDiscos);
-            request.setAttribute("totalReviews", totalReviews);
-            request.setAttribute("totalFavoritos", totalFavoritos);
-
-            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("reviews", reviews);
+            corpo.put("totalReviews", reviews.size());
+            corpo.put("totalFavoritos", wishlistService.contarWishlist(idUsuario));
+            corpo.put("totalDiscos", colecaoService.contarDiscosNaColecao(idUsuario));
+            JsonUtil.ok(response, corpo);
         } catch (Exception e) {
             e.printStackTrace();
-            session.setAttribute("mensagemErro", "Erro ao carregar seus reviews.");
-            response.sendRedirect(request.getContextPath() + "/home");
+            JsonUtil.erro(response, 500, "banco", "Erro ao carregar os reviews.");
         }
     }
 }

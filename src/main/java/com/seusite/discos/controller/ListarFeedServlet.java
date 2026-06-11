@@ -1,35 +1,26 @@
 package com.seusite.discos.controller;
 
-import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.PostService;
+import com.seusite.discos.util.JsonUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
+/** GET /feed?pagina=N&id_disco=X - feed social paginado em JSON. */
 @WebServlet("/feed")
 public class ListarFeedServlet extends HttpServlet {
 
     private final PostService postService = new PostService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        HttpSession session = request.getSession(false);
-        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
-        if (usuario == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp?erro=nao-autenticado");
-            return;
-        }
-
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int pagina = 1;
         String p = request.getParameter("pagina");
         if (p != null) {
@@ -52,20 +43,16 @@ public class ListarFeedServlet extends HttpServlet {
 
         try {
             PostService.FeedPagina fp = postService.listarFeedPagina(pagina, idDisco);
-            request.setAttribute("posts", fp.posts());
-            request.setAttribute("paginaAtual", pagina);
-            request.setAttribute("temProxima", fp.temProxima());
-            request.setAttribute("idDiscoFiltro", idDisco);
-            request.setAttribute("usuarioLogado", usuario);
-            request.getRequestDispatcher("/index.jsp").forward(request, response);
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("posts", fp.posts());
+            corpo.put("paginaAtual", pagina);
+            corpo.put("temProxima", fp.temProxima());
+            corpo.put("idDiscoFiltro", idDisco);
+            corpo.put("tamanhoPagina", postService.getTamanhoPaginaPadrao());
+            JsonUtil.ok(response, corpo);
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("posts", Collections.emptyList());
-            request.setAttribute("paginaAtual", pagina);
-            request.setAttribute("temProxima", Boolean.FALSE);
-            request.setAttribute("usuarioLogado", usuario);
-            request.setAttribute("mensagemErro", "banco");
-            request.getRequestDispatcher("/index.jsp").forward(request, response);
+            JsonUtil.erro(response, 500, "banco", "Erro ao carregar o feed.");
         }
     }
 }
