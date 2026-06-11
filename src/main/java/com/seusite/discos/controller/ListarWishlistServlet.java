@@ -5,19 +5,19 @@ import com.seusite.discos.model.Usuario;
 import com.seusite.discos.service.AvaliacaoService;
 import com.seusite.discos.service.ColecaoService;
 import com.seusite.discos.service.WishlistService;
+import com.seusite.discos.util.JsonUtil;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-
-
-// Servlet para listar a coleção de desejos do usuário logado
+/** GET /wishlist/listar — favoritos do usuario + contadores. */
 @WebServlet("/wishlist/listar")
 public class ListarWishlistServlet extends HttpServlet {
 
@@ -26,40 +26,24 @@ public class ListarWishlistServlet extends HttpServlet {
     private final ColecaoService colecaoService = new ColecaoService();
 
     @Override
-    // Recebe requisições GET, verifica o usuário logado, chama o serviço para obter a wishlist e encaminha os dados para um JSP de visualização
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Usuario usuarioLogado = (Usuario) session.getAttribute("usuarioLogado");
-        if (usuarioLogado == null) {
-            session.setAttribute("mensagemErro", "Você precisa estar logado para acessar esta página.");
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
-            return;
-        }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
+        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
 
         try {
-            // Busca a coleção de desejos baseada na inteligência do Service/DAO
-            List<Disco> minhaWishlist = wishlistService.listarWishlistDoUsuario(usuarioLogado.getIdUsuario());
+            int idUsuario = usuario.getIdUsuario();
+            List<Disco> favoritos = wishlistService.listarWishlistDoUsuario(idUsuario);
 
-            request.setAttribute("usuarioPerfil", usuarioLogado);
-            request.setAttribute("abaAtiva", "favoritos");
-            request.setAttribute("ehProprioPerfil", Boolean.TRUE);
-            request.setAttribute("favoritos", minhaWishlist);
-            request.setAttribute("colecao", java.util.Collections.emptyList());
-            request.setAttribute("reviews", java.util.Collections.emptyList());
-            int totalDiscos = colecaoService.contarDiscosNaColecao(usuarioLogado.getIdUsuario());
-            int totalReviews = avaliacaoService.contarReviews(usuarioLogado.getIdUsuario());
-            request.setAttribute("totalDiscos", totalDiscos);
-            request.setAttribute("totalReviews", totalReviews);
-            request.setAttribute("totalFavoritos", minhaWishlist.size());
-            
-            // Repassa para a View fazer o trabalho visual
-            request.getRequestDispatcher("/perfil.jsp").forward(request, response);
-
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("favoritos", favoritos);
+            corpo.put("totalFavoritos", favoritos.size());
+            corpo.put("totalDiscos", colecaoService.contarDiscosNaColecao(idUsuario));
+            corpo.put("totalReviews", avaliacaoService.contarReviews(idUsuario));
+            JsonUtil.ok(response, corpo);
         } catch (Exception e) {
             e.printStackTrace();
-            // Redirecionamento com mensagem de erro na sessão para evitar tela de erro do servidor
-            session.setAttribute("mensagemErro", "Não foi possível carregar a sua lista de desejos no momento.");
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            JsonUtil.erro(response, 500, "banco", "Erro ao carregar os favoritos.");
         }
     }
 }
