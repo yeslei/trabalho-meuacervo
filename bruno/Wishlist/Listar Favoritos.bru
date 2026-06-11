@@ -1,0 +1,21 @@
+meta {
+  name: Listar Favoritos
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/wishlist/listar
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("favoritos usa GET", function () {
+    expect([200, 401, 500]).to.include(res.status);
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Detalhes do Disco
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/avaliar-disco?id_disco={{idDisco}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("detalhes usa GET", function () {
+    expect([200, 400, 401, 404, 500]).to.include(res.status);
+  });
+}

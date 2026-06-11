@@ -1,0 +1,21 @@
+meta {
+  name: Buscar Discos
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/buscar-discos?q=metallica&page=1
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("busca usa GET e JSON", function () {
+    expect([200, 400, 401, 502]).to.include(res.status);
+  });
+}

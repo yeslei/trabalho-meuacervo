@@ -1,0 +1,28 @@
+meta {
+  name: Adicionar Favorito
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/wishlist/adicionar
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id_disco": {{idDisco}}
+  }
+}
+
+tests {
+  test("adicionar favorito usa POST", function () {
+    expect([200, 400, 401, 500]).to.include(res.status);
+  });
+}

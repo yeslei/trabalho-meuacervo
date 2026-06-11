@@ -1,0 +1,30 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{email}}",
+    "senha": "{{senha}}",
+    "lembrar": true
+  }
+}
+
+tests {
+  test("login retorna sucesso ou erro controlado", function () {
+    expect([200, 400, 401]).to.include(res.status);
+  });
+}

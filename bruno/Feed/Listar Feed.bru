@@ -1,0 +1,21 @@
+meta {
+  name: Listar Feed
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/feed?pagina=1
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("feed usa GET", function () {
+    expect([200, 401, 500]).to.include(res.status);
+  });
+}

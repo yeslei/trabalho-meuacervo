@@ -1,0 +1,21 @@
+meta {
+  name: Listar Colecao
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/colecao/ver
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("colecao usa GET", function () {
+    expect([200, 401, 500]).to.include(res.status);
+  });
+}

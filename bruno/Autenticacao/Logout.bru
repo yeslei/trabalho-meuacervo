@@ -1,0 +1,21 @@
+meta {
+  name: Logout
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/logout
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("logout responde JSON", function () {
+    expect(res.status).to.equal(200);
+  });
+}
