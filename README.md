@@ -141,6 +141,34 @@ Conteúdo esperado para rodar localmente:
 VITE_API_URL=http://localhost:8080/backend
 ```
 
+### 2.1. Configurar variáveis do backend
+
+Crie `.env` na raiz a partir de `.env.example` para rodar localmente, ou cadastre
+as mesmas variáveis no provedor onde a API Java ficar hospedada:
+
+```env
+DB_JDBC_URL=jdbc:postgresql://localhost:5432/site_discos
+DB_USER=postgres
+DB_PASSWORD=123456
+DISCOGS_TOKEN=seu-token-discogs
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://yeslei.github.io
+```
+
+Para Supabase, use a string JDBC do banco com SSL:
+
+```env
+DB_JDBC_URL=jdbc:postgresql://HOST:PORT/postgres?sslmode=require
+DB_USER=postgres.PROJECT_REF
+DB_PASSWORD=SENHA_DO_BANCO
+```
+
+No GitHub Pages, cadastre `VITE_API_URL` em **Settings > Secrets and variables >
+Actions > Variables** com a URL publica da API, por exemplo:
+
+```env
+VITE_API_URL=https://sua-api-gratuita.exemplo.com/backend
+```
+
 ### 3. Buildar o backend
 
 Na raiz do projeto:

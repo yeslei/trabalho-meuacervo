@@ -1,6 +1,8 @@
 # Backend (Maven)
 backend/target/
 target/
+.env
+.env.local
 
 # Frontend (Node/Vite)
 frontend/node_modules/
