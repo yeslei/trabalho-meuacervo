@@ -1,5 +1,6 @@
 package com.seusite.discos.security;
 
+import com.seusite.discos.config.EnvConfig;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpFilter;
@@ -7,7 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Filtro de CORS para a arquitetura desacoplada (React em outra origem).
@@ -21,14 +24,18 @@ import java.util.Set;
  */
 public class CorsFilter extends HttpFilter {
 
-    // Origens autorizadas a consumir a API.
-    // Vite dev server, Live Server e o GitHub Pages do projeto.
-    private static final Set<String> ORIGENS_PERMITIDAS = Set.of(
+    private static final String ORIGENS_PADRAO = String.join(",",
             "http://localhost:5173",
             "http://127.0.0.1:5173",
             "http://localhost:3000",
             "https://yeslei.github.io"
     );
+
+    private static final Set<String> ORIGENS_PERMITIDAS = Arrays.stream(
+                    EnvConfig.get("CORS_ALLOWED_ORIGINS", ORIGENS_PADRAO).split(","))
+            .map(String::trim)
+            .filter(origem -> !origem.isEmpty())
+            .collect(Collectors.toUnmodifiableSet());
 
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
