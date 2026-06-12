@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { colecaoService } from '../services/colecaoService.js'
 import { wishlistService } from '../services/wishlistService.js'
@@ -72,6 +72,11 @@ export default function Perfil() {
             <span>Membro</span>
           </div>
           <p className="perfil-bio">Colecionador apaixonado por musica. Bem-vindo ao meu acervo!</p>
+          {usuario?.username && (
+            <Link className="btn-secondary perfil-edit-button" to={`/perfil/${usuario.username}`}>
+              Ver perfil publico
+            </Link>
+          )}
         </div>
       </section>
 

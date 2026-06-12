@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ColecaoService {
 
@@ -104,6 +106,19 @@ public class ColecaoService {
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? rs.getInt(1) : 0;
             }
+        }
+    }
+
+    public List<Disco> listarDiscosDoUsuario(int idUsuario) throws Exception {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            ColecaoDAO colecaoDAO = new ColecaoDAO(conn);
+            Colecao colecao = colecaoDAO.buscarPorUsuario(idUsuario);
+            if (colecao == null) {
+                return new ArrayList<>();
+            }
+
+            ItemColecaoDAO itemDAO = new ItemColecaoDAO(conn);
+            return itemDAO.listarDiscosDaColecao(colecao.getIdColecao());
         }
     }
 }
