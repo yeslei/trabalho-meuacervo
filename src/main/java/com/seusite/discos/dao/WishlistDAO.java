@@ -22,7 +22,11 @@ public class WishlistDAO {
 
     //adiciona disco na Wishlist
     public void adicionar(int idUsuario, int idDisco) throws SQLException {
-        String sql = "INSERT INTO wishlist (id_usuario, id_disco) VALUES (?, ?)";
+        String sql = """
+            INSERT INTO wishlist (id_usuario, id_disco)
+            VALUES (?, ?)
+            ON CONFLICT (id_usuario, id_disco) DO NOTHING
+            """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idUsuario);

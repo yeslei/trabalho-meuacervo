@@ -6,7 +6,8 @@ TOMCAT_DIR="$HOME/tomcat11"
 # Usando o Archive da Apache, que é permanente para versões específicas
 TOMCAT_URL="https://archive.apache.org/dist/tomcat/tomcat-11/v11.0.21/bin/apache-tomcat-11.0.21.tar.gz"
 WAR_NAME="backend-1.0-SNAPSHOT.war"
-APP_URL="http://localhost:8080/backend/login.jsp"
+API_HEALTH_URL="http://localhost:8080/backend/api/me"
+FRONT_URL="http://localhost:5173/trabalho-meuacervo/"
 
 echo "==> 1/5  Subindo PostgreSQL via Docker..."
 docker compose up -d
@@ -59,15 +60,14 @@ cp "target/$WAR_NAME" "$TOMCAT_DIR/webapps/backend.war"
 echo "" 
 echo "      aguardando aplicacao subir..."
 for i in $(seq 1 30); do
-  CODE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" 2>/dev/null || echo "000")
-  if [ "$CODE" = "200" ]; then
+  CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API_HEALTH_URL" 2>/dev/null || echo "000")
+  if [ "$CODE" = "401" ] || [ "$CODE" = "200" ]; then
     echo ""
     echo "======================================================"
-    echo "  Aplicacao disponivel em: $APP_URL"
+    echo "  API disponivel em: http://localhost:8080/backend"
+    echo "  Frontend local: cd frontend && npm run dev"
+    echo "  Depois acesse: $FRONT_URL"
     echo "======================================================"
-    # Tenta abrir o navegador (funciona no Windows/Git Bash e Linux)
-    if command -v xdg-open > /dev/null; then xdg-open "$APP_URL"; 
-    elif command -v start > /dev/null; then start "$APP_URL"; fi
     exit 0
   fi
   printf "."

@@ -13,6 +13,7 @@ import { API_URL } from '../config.js'
  * Em erro, lanca um Error com .codigo e .status para as paginas tratarem.
  */
 async function request(caminho, { method = 'GET', body, ...resto } = {}) {
+  const baseUrl = API_URL.replace(/\/+$/, '')
   const opcoes = {
     method,
     credentials: 'include', // ESSENCIAL: envia/recebe o cookie de sessao (JSESSIONID)
@@ -27,7 +28,7 @@ async function request(caminho, { method = 'GET', body, ...resto } = {}) {
 
   let resposta
   try {
-    resposta = await fetch(`${API_URL}${caminho}`, opcoes)
+    resposta = await fetch(`${baseUrl}${caminho}`, opcoes)
   } catch (e) {
     const erro = new Error('Nao foi possivel conectar a API. O servidor esta no ar?')
     erro.codigo = 'sem-conexao'
@@ -35,7 +36,28 @@ async function request(caminho, { method = 'GET', body, ...resto } = {}) {
   }
 
   const texto = await resposta.text()
-  const dados = texto ? JSON.parse(texto) : null
+  const contentType = resposta.headers.get('content-type') || ''
+  let dados = null
+
+  if (texto && contentType.includes('application/json')) {
+    try {
+      dados = JSON.parse(texto)
+    } catch (e) {
+      const erro = new Error('A API retornou um JSON invalido.')
+      erro.codigo = 'json-invalido'
+      erro.status = resposta.status
+      throw erro
+    }
+  } else if (texto) {
+    const erro = new Error(
+      resposta.ok
+        ? 'A API retornou uma resposta inesperada.'
+        : 'A API retornou HTML em vez de JSON. Confira se VITE_API_URL termina com /backend.'
+    )
+    erro.codigo = 'resposta-nao-json'
+    erro.status = resposta.status
+    throw erro
+  }
 
   if (!resposta.ok) {
     const erro = new Error(dados?.mensagem || 'Erro na requisicao.')

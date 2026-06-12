@@ -47,7 +47,7 @@ public class CorsFilter extends HttpFilter {
             response.setHeader("Access-Control-Allow-Origin", origem);
             response.setHeader("Access-Control-Allow-Credentials", "true");
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Origin, X-Requested-With");
             response.setHeader("Access-Control-Max-Age", "3600");
             // Necessario para caches/proxies tratarem origens diferentes corretamente
             response.setHeader("Vary", "Origin");

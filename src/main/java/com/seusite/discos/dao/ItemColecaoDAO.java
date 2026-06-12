@@ -19,7 +19,13 @@ public class ItemColecaoDAO {
 
     //  um disco na coleção com detalhes do estado
     public void adicionar(int idColecao, int idDisco, String estadoConservacao, String observacao) throws SQLException {
-        String sql = "INSERT INTO item_colecao (id_colecao, id_disco, estado_conservacao, observacao) VALUES (?, ?, ?, ?)";
+        String sql = """
+            INSERT INTO item_colecao (id_colecao, id_disco, estado_conservacao, observacao)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT (id_colecao, id_disco)
+            DO UPDATE SET estado_conservacao = COALESCE(EXCLUDED.estado_conservacao, item_colecao.estado_conservacao),
+                          observacao = COALESCE(EXCLUDED.observacao, item_colecao.observacao)
+            """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idColecao);
