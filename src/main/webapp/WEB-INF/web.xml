@@ -53,14 +53,12 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- Rotas que exigem login. /api/me NAO entra aqui: ele mesmo decide. -->
+    <!-- Rotas que exigem login. /api/me NAO entra aqui: ele mesmo decide.
+         /home, /buscar-discos e /ver-tracklist sao publicas: apenas consultam o Discogs. -->
     <filter-mapping>
         <filter-name>AuthFilter</filter-name>
-        <url-pattern>/home</url-pattern>
-        <url-pattern>/buscar-discos</url-pattern>
         <url-pattern>/disco/abrir</url-pattern>
         <url-pattern>/disco/metricas</url-pattern>
-        <url-pattern>/ver-tracklist</url-pattern>
         <url-pattern>/avaliar-disco</url-pattern>
         <url-pattern>/colecao/ver</url-pattern>
         <url-pattern>/colecao/listar</url-pattern>

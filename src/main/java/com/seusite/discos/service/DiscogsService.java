@@ -4,9 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.seusite.discos.config.ApiConfig;
 import com.seusite.discos.model.Disco;
 import com.seusite.discos.model.Faixa;
-import com.seusite.discos.config.ApiConfig;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -17,11 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-// service responsável por interagir com a API do Discogs e transformar os dados em objetos Disco
-/**
- * um usuario digit a um termo de busca (ex: "Pink Floyd") e o sistema consulta a API do Discogs, trazendo uma lista de discos relacionados a esse termo. 
- * o servico faz a chamada HTTP, trata a resposta JSON e converter os dados em objetos Java que serao usados na insercao de um disco  que nao esta no banco de dados ainda
- */
 public class DiscogsService {
 
     public static record ResultadoBusca(
@@ -33,47 +28,29 @@ public class DiscogsService {
     ) {
     }
 
-
     private static final String API_URL = "https://api.discogs.com/database/search";
     private static final String API_URL2 = "https://api.discogs.com";
-    /**
-     * Busca padrão: se não informar a página, traz sempre a primeira (página 1).
-     */
+    private static final String USER_AGENT = "MeuAcervoApp/1.0";
+
     public List<Disco> buscarDiscosPorTermo(String termo) throws Exception {
         return buscarDiscosPorTermo(termo, 1);
     }
-    //parâmetro 'pagina' para controlar a paginação da API
+
     public List<Disco> buscarDiscosPorTermo(String termo, int pagina) throws Exception {
         return buscarDiscosPorTermoPaginado(termo, pagina).discos();
     }
 
-    //parâmetro 'pagina' para controlar a paginação da API
     public ResultadoBusca buscarDiscosPorTermoPaginado(String termo, int pagina) throws Exception {
         int paginaSolicitada = pagina < 1 ? 1 : pagina;
         List<Disco> listaDiscos = new ArrayList<>();
 
-        //prepara a URL com paginação
         String encodedQuery = URLEncoder.encode(termo, StandardCharsets.UTF_8);
+        String urlBase = API_URL + "?q=" + encodedQuery + "&type=release"
+                + "&page=" + paginaSolicitada + "&per_page=50";
 
-        //page e per_page na URL
-        String urlCompleta = API_URL + "?q=" + encodedQuery + "&type=release"
-                           + "&page=" + paginaSolicitada + "&per_page=50"
-                           + "&token=" + ApiConfig.DISCOGS_TOKEN;
-        System.out.println("URL COMPLETA: " + urlCompleta);
-        // faz a chamada HTTP usando o HttpClient nativo do Java 11+
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(urlCompleta))
-                .header("User-Agent", "MeuAcervoApp/1.0") // O Discogs exige um User-Agent, senão bloqueia!
-                .GET()
-                .build();
+        HttpResponse<String> response = consultarDiscogs(urlBase);
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // Verifica se a API respondeu com sucesso (Status 200 OK)
         if (response.statusCode() == 200) {
-
-            // Transformação (Parse) do JSON para Objetos Java usando GSON
             JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
             JsonArray results = jsonObject.getAsJsonArray("results");
 
@@ -81,12 +58,10 @@ public class DiscogsService {
                 JsonObject item = element.getAsJsonObject();
                 Disco disco = new Disco();
 
-                // Pegando o ID do Discogs
                 if (item.has("id") && !item.get("id").isJsonNull()) {
                     disco.setDiscogsId(item.get("id").getAsInt());
                 }
 
-                // O Discogs devolve o título no formato: "Nome do Artista - Nome do Álbum"
                 if (item.has("title") && !item.get("title").isJsonNull()) {
                     String titleFull = item.get("title").getAsString();
                     if (titleFull.contains(" - ")) {
@@ -99,7 +74,6 @@ public class DiscogsService {
                     }
                 }
 
-                // Ano de lançamento
                 if (item.has("year") && !item.get("year").isJsonNull()) {
                     try {
                         String yearStr = item.get("year").getAsString().substring(0, 4);
@@ -109,17 +83,16 @@ public class DiscogsService {
                     }
                 }
 
-                // Gênero (Vem como um array, pegamos o primeiro)
-                if (item.has("genre") && item.get("genre").isJsonArray() && !item.get("genre").getAsJsonArray().isEmpty()) {
+                if (item.has("genre") && item.get("genre").isJsonArray()
+                        && !item.get("genre").getAsJsonArray().isEmpty()) {
                     disco.setGenero(item.get("genre").getAsJsonArray().get(0).getAsString());
                 }
 
-                // Formato (Vem como um array, ex: "Vinyl", pegamos o primeiro)
-                if (item.has("format") && item.get("format").isJsonArray() && !item.get("format").getAsJsonArray().isEmpty()) {
+                if (item.has("format") && item.get("format").isJsonArray()
+                        && !item.get("format").getAsJsonArray().isEmpty()) {
                     disco.setFormato(item.get("format").getAsJsonArray().get(0).getAsString());
                 }
 
-                // Imagem de Capa
                 if (item.has("cover_image") && !item.get("cover_image").isJsonNull()) {
                     disco.setImagemCapa(item.get("cover_image").getAsString());
                 }
@@ -140,9 +113,10 @@ public class DiscogsService {
             }
 
             return new ResultadoBusca(listaDiscos, paginaAtual, totalPaginas, totalItens, itensPorPagina);
-        } else {
-            throw new Exception("Erro ao consultar Discogs. Status: " + response.statusCode());
         }
+
+        throw new Exception("Erro ao consultar Discogs. Status: " + response.statusCode()
+                + ". Corpo: " + resumirCorpo(response.body()));
     }
 
     private int getIntOrDefault(JsonObject jsonObject, String key, int fallback) {
@@ -156,22 +130,11 @@ public class DiscogsService {
         }
     }
 
-    /**
-     * Busca a tracklist de um disco pelo ID Discogs. Retorna lista de Faixa (titulo + duracao).
-     */
     public List<Faixa> buscarTracklist(int discogsId) throws Exception {
         List<Faixa> tracklist = new ArrayList<>();
 
-        String urlCompleta = API_URL2 + "/releases/" + discogsId + "?token=" + ApiConfig.DISCOGS_TOKEN;
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(urlCompleta))
-                .header("User-Agent", "MeuAcervoApp/1.0")
-                .GET()
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        String urlBase = API_URL2 + "/releases/" + discogsId;
+        HttpResponse<String> response = consultarDiscogs(urlBase);
 
         if (response.statusCode() == 200) {
             JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
@@ -188,9 +151,58 @@ public class DiscogsService {
                     }
                 }
             }
-        } else {
-            throw new Exception("Erro ao consultar Discogs para tracklist. Status: " + response.statusCode());
+
+            return tracklist;
         }
-        return tracklist;
+
+        throw new Exception("Erro ao consultar Discogs para tracklist. Status: " + response.statusCode()
+                + ". Corpo: " + resumirCorpo(response.body()));
+    }
+
+    private HttpResponse<String> consultarDiscogs(String urlBase) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpResponse<String> response = enviarRequisicao(client, adicionarToken(urlBase));
+
+        if (tokenConfigurado() && tokenRecusado(response.statusCode())) {
+            return enviarRequisicao(client, urlBase);
+        }
+
+        return response;
+    }
+
+    private HttpResponse<String> enviarRequisicao(HttpClient client, String url) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("User-Agent", USER_AGENT)
+                .GET()
+                .build();
+
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String adicionarToken(String urlBase) {
+        if (!tokenConfigurado()) {
+            return urlBase;
+        }
+
+        return urlBase + (urlBase.contains("?") ? "&" : "?")
+                + "token=" + URLEncoder.encode(ApiConfig.DISCOGS_TOKEN.trim(), StandardCharsets.UTF_8);
+    }
+
+    private boolean tokenConfigurado() {
+        return ApiConfig.DISCOGS_TOKEN != null && !ApiConfig.DISCOGS_TOKEN.isBlank();
+    }
+
+    private boolean tokenRecusado(int statusCode) {
+        return statusCode == 401 || statusCode == 403;
+    }
+
+    private String resumirCorpo(String body) {
+        if (body == null || body.isBlank()) {
+            return "sem corpo";
+        }
+
+        String texto = body.replaceAll("\\s+", " ").trim();
+        return texto.length() > 180 ? texto.substring(0, 180) + "..." : texto;
     }
 }
