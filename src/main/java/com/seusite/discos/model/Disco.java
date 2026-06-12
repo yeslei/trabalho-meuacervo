@@ -1,5 +1,7 @@
 package com.seusite.discos.model;
 
+import java.time.LocalDateTime;
+
 public class Disco {
 
     private int idDisco;
@@ -10,6 +12,9 @@ public class Disco {
     private String genero;
     private String formato;
     private String imagemCapa;
+    private String estadoConservacao;
+    private String observacao;
+    private LocalDateTime dataAdicao;
 
     public int getIdDisco() {
         return idDisco;
@@ -73,5 +78,29 @@ public class Disco {
 
     public void setImagemCapa(String imagemCapa) {
         this.imagemCapa = imagemCapa;
+    }
+
+    public String getEstadoConservacao() {
+        return estadoConservacao;
+    }
+
+    public void setEstadoConservacao(String estadoConservacao) {
+        this.estadoConservacao = estadoConservacao;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
+    }
+
+    public LocalDateTime getDataAdicao() {
+        return dataAdicao;
+    }
+
+    public void setDataAdicao(LocalDateTime dataAdicao) {
+        this.dataAdicao = dataAdicao;
     }
 }

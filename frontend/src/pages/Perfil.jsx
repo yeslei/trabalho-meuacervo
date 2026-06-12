@@ -21,11 +21,14 @@ export default function Perfil() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState('')
+  const [itemEditando, setItemEditando] = useState(null)
+  const [detalhesItem, setDetalhesItem] = useState({ estado: '', observacao: '' })
+  const [salvandoDetalhes, setSalvandoDetalhes] = useState(false)
   const [editandoBio, setEditandoBio] = useState(false)
   const [bio, setBio] = useState(usuario?.bio || '')
   const [salvandoBio, setSalvandoBio] = useState(false)
 
-  useEffect(() => {
+  const carregarPerfil = () => {
     setCarregando(true)
     Promise.all([colecaoService.minha(), wishlistService.minha(), avaliacaoService.meusReviews()])
       .then(([col, wish, revs]) => {
@@ -40,6 +43,10 @@ export default function Perfil() {
       })
       .catch((e) => setErro(e.mensagem || 'Erro ao carregar o perfil.'))
       .finally(() => setCarregando(false))
+  }
+
+  useEffect(() => {
+    carregarPerfil()
   }, [])
 
   useEffect(() => {
@@ -56,6 +63,37 @@ export default function Perfil() {
   const trocarAba = (proximaAba) => {
     setAba(proximaAba)
     setSearchParams({ aba: proximaAba })
+  }
+  const editarDetalhes = (disco) => {
+    setItemEditando(disco.idDisco)
+    setDetalhesItem({
+      estado: disco.estadoConservacao || '',
+      observacao: disco.observacao || '',
+    })
+  }
+  const cancelarDetalhes = () => {
+    setItemEditando(null)
+    setDetalhesItem({ estado: '', observacao: '' })
+  }
+  const salvarDetalhes = async (idDisco) => {
+    setErro('')
+    setSucesso('')
+    setSalvandoDetalhes(true)
+
+    try {
+      await colecaoService.atualizarDetalhes(idDisco, detalhesItem.estado, detalhesItem.observacao)
+      setColecao((atual) => atual.map((d) => (
+        d.idDisco === idDisco
+          ? { ...d, estadoConservacao: detalhesItem.estado.trim(), observacao: detalhesItem.observacao.trim() }
+          : d
+      )))
+      setItemEditando(null)
+      setSucesso('Detalhes da colecao atualizados.')
+    } catch (e) {
+      setErro(e.message || e.mensagem || 'Nao foi possivel atualizar os detalhes.')
+    } finally {
+      setSalvandoDetalhes(false)
+    }
   }
   const salvarBio = async (e) => {
     e.preventDefault()
@@ -170,7 +208,65 @@ export default function Perfil() {
           <h2 className="section-heading">Colecao de {usuario?.nome}<span className="count">{stats.totalDiscos} discos</span></h2>
           {colecao.length === 0
             ? <p className="empty-state">Voce ainda nao tem discos na colecao. Comece adicionando o primeiro!</p>
-            : <div className="card-grid">{colecao.map((d) => <DiscoCard key={d.idDisco} disco={d} aoClicar={irParaDisco} />)}</div>}
+            : (
+              <div className="card-grid">
+                {colecao.map((d) => (
+                  <article className="album-card album-card-detalhado" key={d.idDisco} onClick={() => irParaDisco(d)}>
+                    {d.imagemCapa
+                      ? <img className="album-cover" src={d.imagemCapa} alt={d.titulo} loading="lazy" />
+                      : <div className="album-cover cover-placeholder"><i className="fa-solid fa-compact-disc" /></div>}
+
+                    <div className="album-title">{d.titulo}</div>
+                    <div className="album-artist">{d.artista || 'Desconhecido'}</div>
+                    <div className="album-meta">
+                      <span>{[d.anoLancamento, d.formato].filter(Boolean).join(' - ')}</span>
+                    </div>
+
+                    {itemEditando === d.idDisco ? (
+                      <div className="colecao-detalhes-form" onClick={(e) => e.stopPropagation()}>
+                        <label>
+                          Estado
+                          <input
+                            value={detalhesItem.estado}
+                            maxLength={80}
+                            onChange={(e) => setDetalhesItem((atual) => ({ ...atual, estado: e.target.value }))}
+                            placeholder="Ex.: Novo, Bom, Com riscos"
+                          />
+                        </label>
+                        <label>
+                          Nota privada
+                          <textarea
+                            value={detalhesItem.observacao}
+                            maxLength={500}
+                            onChange={(e) => setDetalhesItem((atual) => ({ ...atual, observacao: e.target.value }))}
+                            placeholder="Ex.: comprado na feira, edicao nacional..."
+                          />
+                        </label>
+                        <div className="colecao-detalhes-acoes">
+                          <button className="btn-secondary" type="button" onClick={cancelarDetalhes}>Cancelar</button>
+                          <button
+                            className="btn-primary"
+                            type="button"
+                            disabled={salvandoDetalhes}
+                            onClick={() => salvarDetalhes(d.idDisco)}
+                          >
+                            {salvandoDetalhes ? 'Salvando...' : 'Salvar'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="colecao-detalhes" onClick={(e) => e.stopPropagation()}>
+                        {d.estadoConservacao && <span className="colecao-tag">{d.estadoConservacao}</span>}
+                        {d.observacao && <p>{d.observacao}</p>}
+                        <button className="colecao-editar" type="button" onClick={() => editarDetalhes(d)}>
+                          <i className="fa-regular fa-pen-to-square" /> Editar detalhes
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
         </>
       )}
 

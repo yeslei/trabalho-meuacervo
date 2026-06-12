@@ -231,6 +231,7 @@ http://localhost:5173/trabalho-meuacervo/
 | PUT | `/avaliar-disco` | Atualiza avaliação |
 | GET | `/colecao/ver` | Lista coleção do usuário |
 | POST | `/colecao/adicionar` | Adiciona disco à coleção |
+| PUT | `/colecao/adicionar` | Atualiza estado e observação privada do item |
 | DELETE | `/colecao/adicionar` | Remove disco da coleção |
 | GET | `/wishlist/listar` | Lista favoritos |
 | POST | `/wishlist/adicionar` | Adiciona favorito |
@@ -262,7 +263,7 @@ Ela cobre os principais fluxos da API:
 
 - autenticacao: cadastro, login, usuario logado e logout;
 - discos: home, busca, abertura, detalhes e atualizacao de avaliacao;
-- colecao e favoritos: listagem, adicao e remocao;
+- colecao e favoritos: listagem, adicao, edicao de detalhes e remocao;
 - feed: listagem, criacao de post e curtida.
 
 Para executar:
