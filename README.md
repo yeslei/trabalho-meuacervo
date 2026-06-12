@@ -170,6 +170,13 @@ formato `postgresql://...`. Se a senha tiver caracteres especiais, prefira usar
 DATABASE_URL=postgresql://postgres:SENHA_DO_BANCO@HOST:5432/postgres
 ```
 
+O backend tambem aceita `DB_JDBC_URL` com `user` e `password` na query string,
+mas a configuracao separada costuma ser mais simples de manter:
+
+```env
+DB_JDBC_URL=jdbc:postgresql://HOST:5432/postgres?user=postgres&password=SENHA_DO_BANCO&sslmode=require
+```
+
 No GitHub Pages, cadastre `VITE_API_URL` em **Settings > Secrets and variables >
 Actions > Variables** com a URL publica da API, por exemplo:
 

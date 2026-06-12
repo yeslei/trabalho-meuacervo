@@ -9,10 +9,11 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
 
+    private static final String DB_JDBC_URL = EnvConfig.get("DB_JDBC_URL", null);
     private static final String DATABASE_URL = EnvConfig.get("DATABASE_URL", null);
     private static final String URL = resolverJdbcUrl();
-    private static final String USER = EnvConfig.get("DB_USER", extrairUsuario(DATABASE_URL, "postgres"));
-    private static final String PASSWORD = EnvConfig.get("DB_PASSWORD", extrairSenha(DATABASE_URL, "123456"));
+    private static final String USER = EnvConfig.get("DB_USER", extrairUsuario("postgres"));
+    private static final String PASSWORD = EnvConfig.get("DB_PASSWORD", extrairSenha("123456"));
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -25,9 +26,8 @@ public class ConnectionFactory {
     }
 
     private static String resolverJdbcUrl() {
-        String dbJdbcUrl = EnvConfig.get("DB_JDBC_URL", null);
-        if (dbJdbcUrl != null) {
-            return normalizarJdbcUrl(dbJdbcUrl);
+        if (DB_JDBC_URL != null) {
+            return normalizarJdbcUrl(DB_JDBC_URL);
         }
 
         if (DATABASE_URL != null) {
@@ -72,12 +72,38 @@ public class ConnectionFactory {
         return jdbcUrl + (jdbcUrl.contains("?") ? "&" : "?") + "sslmode=require";
     }
 
-    private static String extrairUsuario(String databaseUrl, String padrao) {
-        return extrairUserInfo(databaseUrl, 0, padrao);
+    private static String extrairUsuario(String padrao) {
+        String usuario = extrairParametroJdbc(DB_JDBC_URL, "user");
+        if (usuario != null) {
+            return usuario;
+        }
+
+        return extrairUserInfo(DATABASE_URL, 0, padrao);
     }
 
-    private static String extrairSenha(String databaseUrl, String padrao) {
-        return extrairUserInfo(databaseUrl, 1, padrao);
+    private static String extrairSenha(String padrao) {
+        String senha = extrairParametroJdbc(DB_JDBC_URL, "password");
+        if (senha != null) {
+            return senha;
+        }
+
+        return extrairUserInfo(DATABASE_URL, 1, padrao);
+    }
+
+    private static String extrairParametroJdbc(String jdbcUrl, String nome) {
+        if (jdbcUrl == null || !jdbcUrl.startsWith("jdbc:postgresql://") || !jdbcUrl.contains("?")) {
+            return null;
+        }
+
+        String query = jdbcUrl.substring(jdbcUrl.indexOf('?') + 1);
+        for (String parametro : query.split("&")) {
+            String[] partes = parametro.split("=", 2);
+            if (partes.length == 2 && partes[0].equals(nome) && !partes[1].isBlank()) {
+                return URLDecoder.decode(partes[1], StandardCharsets.UTF_8);
+            }
+        }
+
+        return null;
     }
 
     private static String extrairUserInfo(String databaseUrl, int indice, String padrao) {
