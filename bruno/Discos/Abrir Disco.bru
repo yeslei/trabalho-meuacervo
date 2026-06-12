@@ -1,0 +1,32 @@
+meta {
+  name: Abrir Disco
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/disco/abrir
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "discogsId": {{discogsId}},
+    "titulo": "Master of Puppets",
+    "artista": "Metallica",
+    "ano": "1986",
+    "capaUrl": ""
+  }
+}
+
+tests {
+  test("abrir disco usa POST", function () {
+    expect([200, 400, 401, 500]).to.include(res.status);
+  });
+}

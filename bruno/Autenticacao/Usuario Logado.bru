@@ -1,0 +1,21 @@
+meta {
+  name: Usuario Logado
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/me
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("endpoint de sessao responde JSON", function () {
+    expect([200, 401]).to.include(res.status);
+  });
+}

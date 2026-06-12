@@ -37,4 +37,15 @@ public class AuthService {
         }
         return null;
     }
+
+    public Usuario atualizarBio(Usuario usuario, String bio) throws SQLException {
+        String bioNormalizada = bio == null ? null : bio.trim();
+        if (bioNormalizada != null && bioNormalizada.length() > 280) {
+            throw new IllegalArgumentException("bio-longa");
+        }
+
+        usuarioDAO.atualizarBio(usuario.getIdUsuario(), bioNormalizada);
+        usuario.setBio(bioNormalizada);
+        return usuario;
+    }
 }

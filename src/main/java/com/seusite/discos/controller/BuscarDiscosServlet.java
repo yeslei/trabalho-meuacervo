@@ -1,85 +1,58 @@
 package com.seusite.discos.controller;
 
-import com.seusite.discos.model.Disco;
 import com.seusite.discos.service.DiscogsService;
+import com.seusite.discos.util.JsonUtil;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
-import java.util.List;
-// Servlet para lidar com buscas de discos via API do Discogs
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** GET /buscar-discos?q=termo&page=N — busca paginada no Discogs. Responde JSON. */
 @WebServlet("/buscar-discos")
 public class BuscarDiscosServlet extends HttpServlet {
 
-    private DiscogsService discogsService = new DiscogsService();
+    private final DiscogsService discogsService = new DiscogsService();
 
     @Override
-    // Recebe requisições GET com o termo de busca e a página desejada, chama o serviço e encaminha os resultados para um JSP
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String termo = request.getParameter("q");
-        String paginaStr = request.getParameter("page");
-        String erroParam = request.getParameter("erro");
-
-        String erroMsg = null;
-        if (erroParam != null && !erroParam.trim().isEmpty()) {
-            if ("disco-invalido".equals(erroParam)) {
-                erroMsg = "Disco invalido para abrir.";
-            } else if ("banco".equals(erroParam)) {
-                erroMsg = "Erro ao acessar o banco de dados.";
-            } else {
-                erroMsg = "Erro ao processar a solicitacao.";
-            }
+        if (termo == null || termo.trim().isEmpty()) {
+            JsonUtil.erro(response, HttpServletResponse.SC_BAD_REQUEST,
+                    "termo-vazio", "Informe um termo de busca.");
+            return;
         }
 
         int pagina = 1;
+        String paginaStr = request.getParameter("page");
         if (paginaStr != null && !paginaStr.trim().isEmpty()) {
-            try {
-                pagina = Integer.parseInt(paginaStr.trim());
-            } catch (NumberFormatException ignored) {
-                pagina = 1;
-            }
+            try { pagina = Integer.parseInt(paginaStr.trim()); } catch (NumberFormatException ignored) { pagina = 1; }
         }
-        if (pagina < 1) {
-            pagina = 1;
-        }
+        if (pagina < 1) pagina = 1;
 
-        if (termo != null && !termo.trim().isEmpty()) {
-            try {
-                // Chama o service que já testado no main
-                DiscogsService.ResultadoBusca resultado = discogsService.buscarDiscosPorTermoPaginado(termo, pagina);
-                List<Disco> resultados = resultado.discos();
-                int paginaAtual = resultado.paginaAtual();
-                int totalPaginas = Math.max(resultado.totalPaginas(), 1);
-                boolean temAnterior = paginaAtual > 1;
-                boolean temProxima = paginaAtual < totalPaginas;
-                
-                // Pendura a lista e os metadados na requisição para o JSP usar
-                request.setAttribute("discos", resultados);
-                request.setAttribute("termoBusca", termo);
-                request.setAttribute("paginaAtual", paginaAtual);
-                request.setAttribute("totalPaginas", totalPaginas);
-                request.setAttribute("totalItens", resultado.totalItens());
-                request.setAttribute("itensPorPagina", resultado.itensPorPagina());
-                request.setAttribute("temAnterior", temAnterior);
-                request.setAttribute("temProxima", temProxima);
-                if (erroMsg != null) {
-                    request.setAttribute("erro", erroMsg);
-                }
-                
-                // Redireciona para a página de resultados
-                request.getRequestDispatcher("/busca.jsp").forward(request, response);
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                request.getSession().setAttribute("mensagemErro", "Erro ao consultar a API: " + e.getMessage());
-                response.sendRedirect(request.getContextPath() + "/index.jsp");
-            }
-        } else {
-            // Se não houver busca, apenas volta para a home ou exibe vazio
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        try {
+            DiscogsService.ResultadoBusca resultado = discogsService.buscarDiscosPorTermoPaginado(termo, pagina);
+            int paginaAtual = resultado.paginaAtual();
+            int totalPaginas = Math.max(resultado.totalPaginas(), 1);
+
+            Map<String, Object> corpo = new LinkedHashMap<>();
+            corpo.put("discos", resultado.discos());
+            corpo.put("termoBusca", termo);
+            corpo.put("paginaAtual", paginaAtual);
+            corpo.put("totalPaginas", totalPaginas);
+            corpo.put("totalItens", resultado.totalItens());
+            corpo.put("itensPorPagina", resultado.itensPorPagina());
+            corpo.put("temAnterior", paginaAtual > 1);
+            corpo.put("temProxima", paginaAtual < totalPaginas);
+            JsonUtil.ok(response, corpo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsonUtil.erro(response, HttpServletResponse.SC_BAD_GATEWAY,
+                    "api-discogs", "Erro ao consultar a API do Discogs.");
         }
     }
 }

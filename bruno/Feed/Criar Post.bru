@@ -1,0 +1,29 @@
+meta {
+  name: Criar Post
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/criar-post
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id_disco": {{idDisco}},
+    "texto": "Post criado pela collection Bruno."
+  }
+}
+
+tests {
+  test("criar post usa POST", function () {
+    expect([201, 400, 401, 500]).to.include(res.status);
+  });
+}

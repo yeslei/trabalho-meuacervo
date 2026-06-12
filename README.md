@@ -1,342 +1,302 @@
 # MeuAcervo
 
-Aplicação web para catalogar coleções de discos de vinil e CDs. O usuário cria uma conta, pesquisa álbuns via API do Discogs, adiciona títulos à sua coleção ou lista de desejos, escreve reviews com nota de 1 a 5 estrelas e acompanha o perfil com estatísticas.
+MeuAcervo é uma aplicação para catalogar discos de vinil e CDs. O projeto foi
+incrementado a partir de uma versão em Servlets/JSP para uma arquitetura com
+API REST em Java e frontend React.
 
----
+O usuário pode criar conta, buscar álbuns pela API do Discogs, adicionar discos
+à coleção ou aos favoritos, avaliar discos com nota de 1 a 5 estrelas e acessar
+um perfil com coleção, reviews e favoritos.
 
-## Stack
+## Visão Geral
+
+- **Backend:** Java 21, Jakarta Servlets, Maven, Tomcat 11 e PostgreSQL.
+- **Frontend:** React 18, Vite, React Router e Fetch API.
+- **Autenticação:** sessão HTTP do Tomcat com cookie `JSESSIONID`.
+- **Integração externa:** Discogs API para busca de discos e tracklists.
+- **Formato da API:** endpoints REST respondendo JSON.
+
+## Tecnologias
 
 | Camada | Tecnologia |
 |---|---|
-| Linguagem | Java 21 |
-| Runtime | Jakarta EE 6 — Tomcat 10.1+ / **Tomcat 11** |
-| Build | Maven 3 (empacota `.war`) |
-| Banco de dados | PostgreSQL 15 |
-| Container do banco | Docker + Docker Compose |
-| Views | JSP + JSTL 3 |
-| API externa | Discogs REST API |
-| Serialização JSON | GSON 2.10 |
-| Hash de senha | jBCrypt 0.4 |
-
----
+| Backend | Java 21, Jakarta Servlet 6, Maven |
+| Servidor | Apache Tomcat 11 |
+| Banco | PostgreSQL 15 |
+| Frontend | React 18, Vite 5 |
+| Roteamento | React Router |
+| JSON | Gson |
+| Testes de API | Bruno |
+| Senhas | jBCrypt |
+| Deploy frontend | GitHub Pages |
 
 ## Arquitetura
 
-O projeto segue o padrão **MVC clássico com Servlets Jakarta EE**.
-
-```
-Browser
-  │
-  ▼
-[ Filters ]
-  ├── EncodingFilter (@WebFilter "/*")  → UTF-8 em toda requisição/resposta
-  └── AuthFilter    (@WebFilter rotas protegidas) → bloqueia sem sessão ou cookie válido
-  │
-  ▼
-[ Controllers — Servlets ]
-  │   um Servlet por caso de uso  (@WebServlet)
-  │   lê parâmetros, chama Service, redireciona (PRG) ou faz forward para JSP
-  ▼
-[ Services ]
-  │   orquestram DAOs e chamadas externas
-  │   contêm a lógica de negócio (validações, decisões)
-  ▼
-[ DAOs ]                          [ DiscogsService ]
-  │   SQL puro via JDBC               Java HttpClient nativo
-  │   um DAO por entidade             GSON para parse do JSON
-  ▼
-PostgreSQL                        Discogs REST API
+```text
+React SPA
+  |
+  | Fetch API + credentials: include
+  v
+Servlets REST
+  |
+  v
+Services
+  |
+  v
+DAOs JDBC
+  |
+  v
+PostgreSQL
 ```
 
-### Estrutura de pacotes
+O backend mantém a separação em camadas da versão original:
 
-```
-com.seusite.discos
-├── config/       ConnectionFactory (JDBC), ApiConfig (leitura do token Discogs)
-├── controller/   Servlets — um por caso de uso
-├── dao/          Acesso ao banco — uma classe por entidade
-├── db/           DatabaseInitializer + AppInitListener (cria tabelas no boot)
-├── model/        POJOs: Usuario, Disco, Colecao, AvaliacaoDisco, Wishlist, Post…
-├── security/     AuthFilter (sessão + cookie) e EncodingFilter
-├── service/      Lógica de negócio que orquestra DAOs e APIs externas
-└── util/         ValidadorUtil, SenhaUtil
+```text
+Controller -> Service -> DAO -> Model
 ```
 
-### Por que Servlets puros e não Spring?
+A principal mudança foi na borda da aplicação. Os servlets deixam de fazer
+`forward` para JSP ou `redirect` como fluxo principal e passam a responder JSON,
+permitindo que o React controle as telas.
 
-Decisão do projeto: demonstrar a camada de Servlet/Filter do Jakarta EE sem abstrações de framework. Cada passo — parsing de parâmetro, gerenciamento de sessão, redirecionamento PRG — é explícito e rastreável no código.
+## Estrutura
 
----
-
-## Banco de dados
-
-O schema é criado automaticamente no primeiro boot pelo `DatabaseInitializer`, invocado pelo `AppInitListener` (`@WebListener`). **Não é necessário rodar nenhum script SQL manualmente.**
-
-### Diagrama de entidades
-
-```
-usuario ──────────────────────────────────────────────┐
-  │                                                    │
-  ├── colecao (1:1)                                    │
-  │     └── item_colecao (N:N com disco)               │
-  │                                                    │
-  ├── wishlist (N:N com disco)                         │
-  │                                                    │
-  ├── avaliacao_disco (N:N com disco, unique)          │
-  │                                                    │
-  └── post ──── curtida ───────────────────────────────┘
-                  │
-                disco
-```
-
-### Entidades
-
-| Tabela | Descrição |
-|---|---|
-| `usuario` | Conta do usuário (email, senha bcrypt, username) |
-| `disco` | Catálogo local — espelho do Discogs |
-| `colecao` | Coleção principal de cada usuário (1:1) |
-| `item_colecao` | Disco dentro de uma coleção (estado de conservação, observação) |
-| `wishlist` | Lista de desejos (usuario × disco) |
-| `avaliacao_disco` | Review com nota 1–5 e comentário (único por usuario × disco) |
-| `post` | Publicações no feed social |
-| `curtida` | Curtidas em posts |
-
----
-
-## Lógica de negócio
-
-### Autenticação e sessão
-
-- Cadastro valida formato de e-mail, unicidade de username e senha mínima de 8 caracteres
-- Senha armazenada como hash BCrypt com salt automático — nunca em texto puro
-- Login cria uma `HttpSession` com duração de 30 minutos
-- Com "Manter conectado" marcado, um cookie `usuarioId` é gravado por 7 dias
-- O `AuthFilter` lê esse cookie e reconstrói a sessão via lookup no banco, sem pedir login novamente
-- Ao criar conta, o usuário já é autenticado automaticamente e redirecionado para `/home`
-
-### Disco como entidade local
-
-O Discogs é apenas fonte de consulta — os dados ficam no banco próprio. Ao salvar qualquer interação (coleção, wishlist, avaliação), `DiscoService.obterOuSalvarDisco()` verifica se o disco já existe pelo `discogs_id`. Se não existir, persiste antes de criar a relação. Isso garante integridade referencial e evita duplicatas.
-
-### Busca e detalhes
-
-- `BuscarDiscosServlet` envia o termo para `DiscogsService`, que consulta a API e retorna até 50 resultados por página
-- O título vem no formato `"Artista - Álbum"` e é separado pelo service antes de popular o `Disco`
-- `DiscoAbrirServlet` (`/disco/abrir`) recebe o `discogsId`, persiste o disco localmente e redireciona para `/avaliar-disco` com o ID interno
-- O tracklist é carregado via **AJAX** (`/ver-tracklist?id=<discogsId>`) para não bloquear o carregamento inicial da página
-
-### Coleção e wishlist
-
-- Cada usuário tem exatamente **uma coleção principal**, criada automaticamente no primeiro acesso
-- Adicionar e remover usam o mesmo endpoint com parâmetro `acao=adicionar|remover`
-- Todo POST bem-sucedido termina com `sendRedirect` (padrão **PRG**), evitando resubmissão ao pressionar F5
-
-### Perfil
-
-- Três abas: **Coleção** (`/colecao/ver`), **Reviews** (`/perfil/reviews`), **Favoritos** (`/wishlist/listar`)
-- Os três contadores no topo (discos, reviews, favoritos) sempre buscam o valor real do banco, independente de qual aba está ativa
-
----
-
-## Pré-requisitos
-
-| Ferramenta | Versão mínima |
-|---|---|
-| Java JDK | 21 (`java -version`) |
-| Maven | 3.8 (`mvn -version`) |
-| Docker + Docker Compose | qualquer (`docker -v`) |
-| Apache Tomcat | **11** (ou 10.1) |
-
-> **Tomcat 9 não funciona.** O projeto usa o namespace `jakarta.*` (Jakarta EE 9+). Tomcat 9 ainda usa `javax.*` e lançará erros de `ClassNotFoundException` no deploy.
-
----
-
-## Como rodar (passo a passo)
-
-### 1. Clone o repositório
-
-```bash
-git clone <url-do-repositorio>
-cd trabalho-meuacervo
+```text
+.
+├── db/
+│   └── schema.sql
+├── bruno/
+│   ├── bruno.json
+│   ├── environments/
+│   └── ...
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── styles/
+│   ├── package.json
+│   └── vite.config.js
+├── src/main/java/com/seusite/discos/
+│   ├── config/
+│   ├── controller/
+│   ├── dao/
+│   ├── db/
+│   ├── model/
+│   ├── security/
+│   ├── service/
+│   └── util/
+├── src/main/webapp/
+├── docker-compose.yml
+├── pom.xml
+└── README.md
 ```
 
-### 2. Suba o banco de dados
+## Pré-Requisitos
+
+- Java 21
+- Maven 3.8+
+- Node.js 18+
+- Docker Desktop
+- Tomcat 11
+
+## Frontend Hospedado
+
+O frontend React foi configurado para publicacao no GitHub Pages:
+
+```text
+https://yeslei.github.io/trabalho-meuacervo/
+```
+
+Observacao: o frontend publicado no Pages e estatico. Para login, busca,
+colecao e avaliacoes funcionarem, a API Java precisa estar publicada ou
+acessivel pela URL configurada em `VITE_API_URL`.
+
+## Como Rodar Localmente
+
+### 1. Subir o banco
+
+Na raiz do projeto:
 
 ```bash
 docker compose up -d
 ```
 
-PostgreSQL 15 vai subir na porta `5432`. O banco `site_discos` e todas as tabelas são criadas automaticamente — nenhum script SQL adicional é necessário.
+O container cria o banco `site_discos` com usuário `postgres` e senha `123456`.
 
-### 3. Compile e gere o WAR
+### 2. Configurar variáveis do frontend
+
+Crie `frontend/.env` a partir do exemplo:
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+Conteúdo esperado para rodar localmente:
+
+```env
+VITE_API_URL=http://localhost:8080/backend
+```
+
+### 2.1. Configurar variáveis do backend
+
+Crie `.env` na raiz a partir de `.env.example` para rodar localmente, ou cadastre
+as mesmas variáveis no provedor onde a API Java ficar hospedada:
+
+```env
+DB_JDBC_URL=jdbc:postgresql://localhost:5432/site_discos
+DB_USER=postgres
+DB_PASSWORD=123456
+DISCOGS_TOKEN=seu-token-discogs
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://yeslei.github.io
+```
+
+Para Supabase, use a string JDBC do banco com SSL:
+
+```env
+DB_JDBC_URL=jdbc:postgresql://HOST:PORT/postgres?sslmode=require
+DB_USER=postgres.PROJECT_REF
+DB_PASSWORD=SENHA_DO_BANCO
+```
+
+No GitHub Pages, cadastre `VITE_API_URL` em **Settings > Secrets and variables >
+Actions > Variables** com a URL publica da API, por exemplo:
+
+```env
+VITE_API_URL=https://sua-api-gratuita.exemplo.com/backend
+```
+
+### 3. Buildar o backend
+
+Na raiz do projeto:
 
 ```bash
 mvn clean package
 ```
 
-O arquivo estará em `target/backend-1.0-SNAPSHOT.war`.
+O WAR será gerado em:
 
-### 4. Deploy no Tomcat 11
+```text
+target/backend-1.0-SNAPSHOT.war
+```
+
+### 4. Publicar no Tomcat
+
+Copie o WAR para o Tomcat com o nome `backend.war`.
+
+Exemplo no Windows:
+
+```powershell
+Copy-Item target/backend-1.0-SNAPSHOT.war "C:\Program Files\Apache Software Foundation\Tomcat 11.0\webapps\backend.war" -Force
+```
+
+Depois inicie o Tomcat. A API ficará em:
+
+```text
+http://localhost:8080/backend
+```
+
+### 5. Rodar o frontend
+
+Em outro terminal:
 
 ```bash
-# Substitua ~/tomcat11 pelo caminho da sua instalação
-cp target/backend-1.0-SNAPSHOT.war ~/tomcat11/webapps/backend.war
-~/tomcat11/bin/startup.sh
+cd frontend
+npm install
+npm run dev
 ```
 
-### 5. Acesse
+Acesse:
 
-```
-http://localhost:8080/backend/login.jsp
-```
-
-Crie uma conta e use normalmente. Após o cadastro o sistema já faz o login automaticamente.
-
----
-
-## Configuração
-
-### Banco de dados
-
-Os valores padrão estão em `ConnectionFactory.java` e já batem com o `docker-compose.yml`:
-
-| Parâmetro | Valor padrão |
-|---|---|
-| Host | `localhost:5432` |
-| Banco | `site_discos` |
-| Usuário | `postgres` |
-| Senha | `123456` |
-
-Para alterar, edite `src/main/java/com/seusite/discos/config/ConnectionFactory.java`.
-
-### Token da API do Discogs
-
-O token de exemplo já está em `config.properties`. Para usar o seu próprio (recomendado):
-
-```properties
-# src/main/java/com/seusite/discos/config/config.properties
-discogs.api.url=https://api.discogs.com
-discogs.api.token=SEU_TOKEN_AQUI
+```text
+http://localhost:5173/trabalho-meuacervo/
 ```
 
-Ou via variável de ambiente (tem precedência sobre o arquivo):
+## Endpoints Principais
 
-```bash
-export DISCOGS_API_TOKEN=SEU_TOKEN_AQUI
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/cadastro` | Cria conta e autentica |
+| POST | `/login` | Autentica usuário |
+| POST | `/logout` | Encerra sessão |
+| GET | `/api/me` | Retorna usuário logado |
+| GET | `/home` | Lista discos em destaque |
+| GET | `/buscar-discos?q=&page=` | Busca discos na API Discogs |
+| POST | `/disco/abrir` | Persiste disco e retorna ID interno |
+| GET | `/avaliar-disco?id_disco=` | Detalhes, reviews e tracklist |
+| POST | `/avaliar-disco` | Cria avaliação |
+| PUT | `/avaliar-disco` | Atualiza avaliação |
+| GET | `/colecao/ver` | Lista coleção do usuário |
+| POST | `/colecao/adicionar` | Adiciona disco à coleção |
+| DELETE | `/colecao/adicionar` | Remove disco da coleção |
+| GET | `/wishlist/listar` | Lista favoritos |
+| POST | `/wishlist/adicionar` | Adiciona favorito |
+| DELETE | `/wishlist/adicionar` | Remove favorito |
+| GET | `/perfil/reviews` | Lista reviews do usuário |
+| GET | `/feed?pagina=` | Lista feed social |
+| GET | `/post?id=` | Detalha post |
+| POST | `/criar-post` | Cria post |
+| POST | `/curtir-post` | Alterna curtida |
+
+Rotas protegidas retornam `401` em JSON quando não há sessão válida:
+
+```json
+{
+  "erro": "nao-autenticado",
+  "mensagem": "Faca login."
+}
 ```
 
----
+## Testes da API com Bruno
 
-## Rotas
+A Collection do Bruno fica na pasta:
 
-| Método | Rota | Descrição | Protegida |
-|---|---|---|---|
-| GET | `/login.jsp` | Tela de login | — |
-| POST | `/login` | Autentica e cria sessão | — |
-| GET | `/cadastro.jsp` | Tela de cadastro | — |
-| POST | `/cadastro` | Cria conta e faz login automático | — |
-| GET | `/home` | Home com discos em destaque | sim |
-| GET | `/buscar-discos?q=termo` | Busca na API do Discogs | sim |
-| GET | `/disco/abrir?idDisco=X` | Persiste disco e redireciona para detalhes | sim |
-| GET | `/avaliar-disco?id_disco=X` | Página de detalhes, tracklist e reviews | sim |
-| POST | `/avaliar-disco` | Salva review com nota | sim |
-| POST | `/colecao/adicionar` | Adiciona ou remove da coleção | sim |
-| POST | `/wishlist/adicionar` | Adiciona ou remove da wishlist | sim |
-| GET | `/colecao/ver` | Perfil — aba Coleção | sim |
-| GET | `/perfil/reviews` | Perfil — aba Reviews | sim |
-| GET | `/wishlist/listar` | Perfil — aba Favoritos | sim |
-| GET | `/ver-tracklist?id=X` | Tracklist via AJAX (retorna HTML parcial) | sim |
-| GET | `/logout` | Encerra sessão e limpa cookies | sim |
-
----
-
-## Decisões técnicas
-
-**BCrypt com salt automático** — `BCrypt.gensalt()` gera um salt diferente a cada cadastro. Senhas iguais produzem hashes diferentes, o que protege contra rainbow table attacks.
-
-**PRG (Post/Redirect/Get)** — Todo POST bem-sucedido termina com `sendRedirect`. Evita o problema clássico de reenvio de formulário ao pressionar F5 após uma ação.
-
-**`AppInitListener` + `DatabaseInitializer`** — O `@WebListener` invoca `CREATE TABLE IF NOT EXISTS` na inicialização do contexto. Idempotente: rodar múltiplas vezes não tem efeito colateral. Nenhum setup manual de banco necessário.
-
-**Session + Cookie "manter conectado"** — Sessão padrão de 30 minutos. Com a opção marcada, cookie `usuarioId` gravado por 7 dias. `AuthFilter` reconstrói a sessão a partir do cookie, sem expor senha.
-
-**`HttpClient` nativo do Java 11+** — Sem dependência adicional de biblioteca HTTP. O header `User-Agent` é obrigatório na API do Discogs; sem ele as requisições são bloqueadas com 403.
-
-**`<c:out>`** em todo output dinâmico nas JSPs — Escapa automaticamente caracteres HTML (`<`, `>`, `"`, `&`), prevenindo XSS sem lógica adicional no servidor.
-
----
-
----
-
-## Script copia-e-cola para colegas
-
-Salve o conteúdo abaixo como `setup.sh` na raiz do projeto e execute:
-
-```bash
-chmod +x setup.sh && ./setup.sh
+```text
+bruno/
 ```
 
-```bash
-#!/bin/bash
-# setup.sh — sobe banco, compila, faz deploy e abre o navegador
+Ela cobre os principais fluxos da API:
 
-set -e
+- autenticacao: cadastro, login, usuario logado e logout;
+- discos: home, busca, abertura, detalhes e atualizacao de avaliacao;
+- colecao e favoritos: listagem, adicao e remocao;
+- feed: listagem, criacao de post e curtida.
 
-TOMCAT_DIR="$HOME/tomcat11"
-TOMCAT_URL="https://downloads.apache.org/tomcat/tomcat-11/v11.0.21/bin/apache-tomcat-11.0.21.tar.gz"
-WAR_NAME="backend-1.0-SNAPSHOT.war"
-APP_URL="http://localhost:8080/backend/login.jsp"
+Para executar:
 
-echo "==> 1/5  Subindo PostgreSQL via Docker..."
-docker compose up -d
-echo "      aguardando banco ficar pronto..."
-until docker exec postgres-discos pg_isready -q; do sleep 1; done
-echo "      banco OK"
+1. Abra o Bruno.
+2. Selecione **Open Collection**.
+3. Escolha a pasta `bruno/`.
+4. Use o ambiente `Local`.
+5. Confirme que `baseUrl` esta como `http://localhost:8080/backend`.
+6. Rode primeiro `Cadastro` ou `Login` para criar a sessao.
 
-echo "==> 2/5  Compilando projeto com Maven..."
-mvn clean package -q
-echo "      WAR gerado: target/$WAR_NAME"
+## Deploy do Frontend
 
-echo "==> 3/5  Verificando Tomcat 11..."
-if [ ! -d "$TOMCAT_DIR" ]; then
-  echo "      Tomcat não encontrado — baixando..."
-  curl -L "$TOMCAT_URL" -o /tmp/tomcat11.tar.gz
-  mkdir -p "$TOMCAT_DIR"
-  tar -xzf /tmp/tomcat11.tar.gz -C "$TOMCAT_DIR" --strip-components=1
-  chmod +x "$TOMCAT_DIR/bin/"*.sh
-  echo "      Tomcat instalado em $TOMCAT_DIR"
-fi
+O workflow em `.github/workflows/deploy.yml` publica o frontend no GitHub Pages
+quando há push na branch `main`.
 
-echo "==> 4/5  Parando Tomcat anterior (se houver)..."
-"$TOMCAT_DIR/bin/shutdown.sh" 2>/dev/null || true
-sleep 2
-pkill -f "catalina" 2>/dev/null || true
-sleep 1
+O Vite usa `base: '/trabalho-meuacervo/'`, portanto a aplicação deve ser aberta
+no caminho do repositório quando publicada no Pages.
 
-echo "==> 5/5  Fazendo deploy e iniciando Tomcat..."
-cp "target/$WAR_NAME" "$TOMCAT_DIR/webapps/backend.war"
-export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-"$TOMCAT_DIR/bin/startup.sh"
+## Arquivos Locais Ignorados
 
-echo ""
-echo "      aguardando aplicação subir..."
-for i in $(seq 1 30); do
-  CODE=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" 2>/dev/null || echo "000")
-  if [ "$CODE" = "200" ]; then
-    echo ""
-    echo "======================================================"
-    echo "  Aplicação disponível em: $APP_URL"
-    echo "======================================================"
-    # tenta abrir no navegador (funciona no Linux com interface gráfica)
-    xdg-open "$APP_URL" 2>/dev/null || true
-    exit 0
-  fi
-  printf "."
-  sleep 2
-done
+Não devem ser versionados:
 
-echo ""
-echo "  Tomcat demorou mais que o esperado. Verifique os logs:"
-echo "  tail -f $TOMCAT_DIR/logs/catalina.out"
+```text
+target/
+.run-tomcat/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
 ```
+
+## Observações
+
+- O backend precisa estar em um Tomcat acessível pelo valor de `VITE_API_URL`.
+- O frontend enviado ao GitHub Pages é apenas estático; ele não hospeda a API.
+- O login local funciona com frontend e backend em `localhost`, pois o navegador
+  envia o cookie de sessão entre portas diferentes do mesmo host.

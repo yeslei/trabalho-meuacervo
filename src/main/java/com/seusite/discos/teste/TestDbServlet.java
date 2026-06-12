@@ -1,7 +1,8 @@
-package com.seusite.discos.teste; // Note que o pacote é o 'teste'
+package com.seusite.discos.teste;
 
 import com.seusite.discos.config.ConnectionFactory;
 import com.seusite.discos.db.DatabaseInitializer;
+import com.seusite.discos.util.JsonUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -9,34 +10,37 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
 
-@WebServlet("/testar") // Rota bem curtinha para facilitar
+@WebServlet("/testar")
 public class TestDbServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/html;charset=UTF-8");
-        PrintWriter out = resp.getWriter();
-
         try {
-            DatabaseInitializer.init(); // Cria as tabelas se não existirem
+            DatabaseInitializer.init();
 
             try (Connection conn = ConnectionFactory.getConnection();
                  Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT count(*) AS total FROM usuario")) {
 
+                int totalUsuarios = 0;
                 if (rs.next()) {
-                    out.println("<h1>Sucesso!</h1>");
-                    out.println("<p>Banco conectado e tabelas verificadas.</p>");
+                    totalUsuarios = rs.getInt("total");
                 }
+
+                JsonUtil.ok(resp, Map.of(
+                        "status", "ok",
+                        "mensagem", "Banco conectado e tabelas verificadas.",
+                        "totalUsuarios", totalUsuarios
+                ));
             }
         } catch (Exception e) {
-            out.println("<h1>Erro ao conectar!</h1>");
-            out.println("<p>" + e.getMessage() + "</p>");
+            JsonUtil.erro(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "banco", "Erro ao conectar ao banco.");
         }
     }
 }

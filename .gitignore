@@ -1,41 +1,18 @@
+# Backend (Maven)
+backend/target/
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+.env
+.env.local
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
-*.iml
-*.ipr
+# Frontend (Node/Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+# Logs e IDE
+*.log
+.idea/
 .vscode/
-
-### Mac OS ###
 .DS_Store
-.smarttomcat
-.idea
+.run-tomcat/

@@ -1,0 +1,30 @@
+meta {
+  name: Atualizar Avaliacao
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/avaliar-disco
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id_disco": {{idDisco}},
+    "nota": 5,
+    "comentario": "Avaliacao atualizada pela collection Bruno."
+  }
+}
+
+tests {
+  test("avaliacao aceita PUT", function () {
+    expect([200, 400, 401, 500]).to.include(res.status);
+  });
+}

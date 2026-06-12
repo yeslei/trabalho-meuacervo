@@ -4,6 +4,7 @@ CREATE TABLE usuario (
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     username VARCHAR(15) UNIQUE,
+    bio VARCHAR(280),
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -113,7 +114,7 @@ CREATE TABLE avaliacao_disco (
         UNIQUE (id_usuario, id_disco)
 );
 
-0CREATE TABLE curtida_post (
+CREATE TABLE curtida_post (
     id_usuario INT NOT NULL,
     id_post INT NOT NULL,
     data_curtida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

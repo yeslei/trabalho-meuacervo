@@ -1,5 +1,5 @@
 package com.seusite.discos.config;
 
 public class ApiConfig {
-    public static final String DISCOGS_TOKEN = "BIocbHggunzxBPNxHQyEWxBEvNdgONLrCuZGOsNt";
+    public static final String DISCOGS_TOKEN = EnvConfig.get("DISCOGS_TOKEN", "");
 }

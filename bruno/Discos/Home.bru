@@ -1,0 +1,21 @@
+meta {
+  name: Home
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/home
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+tests {
+  test("home exige sessao ou retorna discos", function () {
+    expect([200, 401]).to.include(res.status);
+  });
+}

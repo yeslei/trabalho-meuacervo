@@ -5,46 +5,67 @@
                              https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
 
-    <display-name>MeuAcervo</display-name>
+    <display-name>MeuAcervo API</display-name>
 
     <request-character-encoding>UTF-8</request-character-encoding>
     <response-character-encoding>UTF-8</response-character-encoding>
-
-    <welcome-file-list>
-        <welcome-file>login.jsp</welcome-file>
-    </welcome-file-list>
 
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
 
     <!-- ================================================================
-         Cache HTTP – aplica Cache-Control em todas as requisições.
-         Deve ser o primeiro filtro da cadeia para garantir os headers.
+         Cadeia de filtros declarada AQUI (e nao via @WebFilter) para
+         garantir a ORDEM. A ordem das <filter-mapping> e respeitada:
+         1) CORS  -> precisa rodar primeiro para que ate respostas 401
+                     saiam com os headers de CORS (senao o navegador
+                     bloqueia a leitura do erro pelo React).
+         2) Encoding -> UTF-8 em tudo.
+         3) Auth  -> bloqueia rotas protegidas devolvendo 401 JSON.
          ================================================================ -->
-    <!-- ================================================================
-         Páginas de erro
-         ================================================================ -->
-    <error-page>
-        <error-code>404</error-code>
-        <location>/erro.jsp</location>
-    </error-page>
-    <error-page>
-        <error-code>500</error-code>
-        <location>/erro.jsp</location>
-    </error-page>
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.seusite.discos.security.CorsFilter</filter-class>
+    </filter>
+    <filter>
+        <filter-name>EncodingFilter</filter-name>
+        <filter-class>com.seusite.discos.security.EncodingFilter</filter-class>
+    </filter>
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.seusite.discos.security.AuthFilter</filter-class>
+    </filter>
 
-    <!-- ================================================================
-         Perfis de segurança (Security Roles) da aplicação.
-         A verificação é feita programaticamente no AuthFilter.
-         ================================================================ -->
-    <security-role>
-        <description>Usuário comum — pode usar todas as funcionalidades de membro.</description>
-        <role-name>user</role-name>
-    </security-role>
-    <security-role>
-        <description>Administrador — acesso a rotas de manutenção e seed de dados.</description>
-        <role-name>admin</role-name>
-    </security-role>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>EncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Rotas que exigem login. /api/me NAO entra aqui: ele mesmo decide. -->
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/home</url-pattern>
+        <url-pattern>/buscar-discos</url-pattern>
+        <url-pattern>/disco/abrir</url-pattern>
+        <url-pattern>/disco/metricas</url-pattern>
+        <url-pattern>/ver-tracklist</url-pattern>
+        <url-pattern>/avaliar-disco</url-pattern>
+        <url-pattern>/colecao/ver</url-pattern>
+        <url-pattern>/colecao/listar</url-pattern>
+        <url-pattern>/colecao/criar</url-pattern>
+        <url-pattern>/colecao/adicionar</url-pattern>
+        <url-pattern>/perfil/reviews</url-pattern>
+        <url-pattern>/wishlist/adicionar</url-pattern>
+        <url-pattern>/wishlist/remover</url-pattern>
+        <url-pattern>/wishlist/listar</url-pattern>
+        <url-pattern>/feed</url-pattern>
+        <url-pattern>/post</url-pattern>
+        <url-pattern>/criar-post</url-pattern>
+        <url-pattern>/curtir-post</url-pattern>
+    </filter-mapping>
 
 </web-app>
