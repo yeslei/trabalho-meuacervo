@@ -25,6 +25,18 @@ public class ConnectionFactory {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
+    public static String getUrlSanitizada() {
+        return URL.replaceAll("(?i)(password=)[^&]+", "$1****");
+    }
+
+    public static String getUsuarioConfigurado() {
+        return USER;
+    }
+
+    public static boolean usandoFallbackLocal() {
+        return DB_JDBC_URL == null && DATABASE_URL == null;
+    }
+
     private static String resolverJdbcUrl() {
         if (DB_JDBC_URL != null) {
             return normalizarJdbcUrl(DB_JDBC_URL);

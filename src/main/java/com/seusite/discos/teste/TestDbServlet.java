@@ -39,8 +39,16 @@ public class TestDbServlet extends HttpServlet {
                 ));
             }
         } catch (Exception e) {
-            JsonUtil.erro(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "banco", "Erro ao conectar ao banco.");
+            e.printStackTrace();
+            JsonUtil.escreverJson(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Map.of(
+                    "erro", "banco",
+                    "mensagem", "Erro ao conectar ao banco.",
+                    "tipo", e.getClass().getSimpleName(),
+                    "detalhe", e.getMessage() == null ? "sem detalhe" : e.getMessage(),
+                    "jdbcUrl", ConnectionFactory.getUrlSanitizada(),
+                    "dbUser", ConnectionFactory.getUsuarioConfigurado(),
+                    "usandoFallbackLocal", ConnectionFactory.usandoFallbackLocal()
+            ));
         }
     }
 }
