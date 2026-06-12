@@ -12,9 +12,22 @@ um perfil com coleção, reviews e favoritos.
 
 - **Backend:** Java 21, Jakarta Servlets, Maven, Tomcat 11 e PostgreSQL.
 - **Frontend:** React 18, Vite, React Router e Fetch API.
+- **Banco em produção:** PostgreSQL hospedado no Supabase.
 - **Autenticação:** sessão HTTP do Tomcat com cookie `JSESSIONID`.
 - **Integração externa:** Discogs API para busca de discos e tracklists.
 - **Formato da API:** endpoints REST respondendo JSON.
+
+## URLs em Produção
+
+| Parte | URL |
+|---|---|
+| Frontend | `https://yeslei.github.io/trabalho-meuacervo/` |
+| Backend/API | `https://trabalho-meuacervo-production.up.railway.app/backend` |
+| Banco de dados | PostgreSQL no Supabase |
+
+O frontend hospedado no GitHub Pages é uma SPA estática. Todas as operações de
+login, busca, coleção, favoritos, reviews e feed usam a API Java publicada no
+Railway.
 
 ## Tecnologias
 
@@ -23,12 +36,14 @@ um perfil com coleção, reviews e favoritos.
 | Backend | Java 21, Jakarta Servlet 6, Maven |
 | Servidor | Apache Tomcat 11 |
 | Banco | PostgreSQL 15 |
+| Banco em produção | Supabase |
 | Frontend | React 18, Vite 5 |
 | Roteamento | React Router |
 | JSON | Gson |
 | Testes de API | Bruno |
 | Senhas | jBCrypt |
 | Deploy frontend | GitHub Pages |
+| Deploy backend | Railway |
 
 ## Arquitetura
 
@@ -105,15 +120,20 @@ permitindo que o React controle as telas.
 
 ## Frontend Hospedado
 
-O frontend React foi configurado para publicacao no GitHub Pages:
+O frontend React está publicado no GitHub Pages:
 
 ```text
 https://yeslei.github.io/trabalho-meuacervo/
 ```
 
-Observacao: o frontend publicado no Pages e estatico. Para login, busca,
-colecao e avaliacoes funcionarem, a API Java precisa estar publicada ou
-acessivel pela URL configurada em `VITE_API_URL`.
+O backend Java está publicado no Railway:
+
+```text
+https://trabalho-meuacervo-production.up.railway.app/backend
+```
+
+Para o frontend publicado funcionar, `VITE_API_URL` precisa apontar para essa
+URL do backend.
 
 ## Como Rodar Localmente
 
@@ -178,10 +198,10 @@ DB_JDBC_URL=jdbc:postgresql://HOST:5432/postgres?user=postgres&password=SENHA_DO
 ```
 
 No GitHub Pages, cadastre `VITE_API_URL` em **Settings > Secrets and variables >
-Actions > Variables** com a URL publica da API, por exemplo:
+Actions > Variables** com a URL publica da API:
 
 ```env
-VITE_API_URL=https://sua-api-gratuita.exemplo.com/backend
+VITE_API_URL=https://trabalho-meuacervo-production.up.railway.app/backend
 ```
 
 ### 3. Buildar o backend
@@ -290,6 +310,29 @@ Para executar:
 5. Confirme que `baseUrl` esta como `http://localhost:8080/backend`.
 6. Rode primeiro `Cadastro` ou `Login` para criar a sessao.
 
+## Deploy do Backend
+
+O backend Java está publicado no Railway em:
+
+```text
+https://trabalho-meuacervo-production.up.railway.app/backend
+```
+
+O banco de dados de produção foi criado no Supabase usando PostgreSQL. No
+Railway, configure as variáveis de ambiente do serviço apontando para esse banco:
+
+```env
+DATABASE_URL=postgresql://...supabase...
+DISCOGS_TOKEN=seu-token-discogs
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,https://yeslei.github.io
+SESSION_COOKIE_SAMESITE_NONE=true
+SESSION_COOKIE_SECURE=auto
+```
+
+Também é possível usar `DB_JDBC_URL`, `DB_USER` e `DB_PASSWORD` no lugar de
+`DATABASE_URL`. O `DISCOGS_TOKEN` é recomendado em produção para melhorar a
+disponibilidade dos dados e imagens retornados pela API do Discogs.
+
 ## Deploy do Frontend
 
 O workflow em `.github/workflows/deploy.yml` publica o frontend no GitHub Pages
@@ -297,6 +340,13 @@ quando há push na branch `main`.
 
 O Vite usa `base: '/trabalho-meuacervo/'`, portanto a aplicação deve ser aberta
 no caminho do repositório quando publicada no Pages.
+
+Antes de publicar, confirme que a variável `VITE_API_URL` do GitHub Actions está
+configurada como:
+
+```text
+https://trabalho-meuacervo-production.up.railway.app/backend
+```
 
 ## Arquivos Locais Ignorados
 
