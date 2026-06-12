@@ -24,7 +24,30 @@ public class DiscoService {
         Disco discoExistente = discoDAO.buscarPorDiscogsId(disco.getDiscogsId());
         
         if (discoExistente != null) {
-            // O disco já está no nosso banco, devolvemos ele
+            // Completa o registro existente com os dados mais novos vindos da API.
+            if (disco.getDiscogsId() != null) {
+                discoExistente.setDiscogsId(disco.getDiscogsId());
+            }
+            if (disco.getTitulo() != null) {
+                discoExistente.setTitulo(disco.getTitulo());
+            }
+            if (disco.getArtista() != null) {
+                discoExistente.setArtista(disco.getArtista());
+            }
+            if (disco.getAnoLancamento() != null) {
+                discoExistente.setAnoLancamento(disco.getAnoLancamento());
+            }
+            if (disco.getGenero() != null) {
+                discoExistente.setGenero(disco.getGenero());
+            }
+            if (disco.getFormato() != null) {
+                discoExistente.setFormato(disco.getFormato());
+            }
+            if (disco.getImagemCapa() != null) {
+                discoExistente.setImagemCapa(disco.getImagemCapa());
+            }
+
+            discoDAO.atualizar(discoExistente);
             return discoExistente;
         } else {
             // O disco é inédito. Salvamos no banco e injetamos o ID gerado no objeto

@@ -31,7 +31,7 @@ export default function Home() {
         capa: disco.imagemCapa,
         ano: disco.anoLancamento,
       })
-      navigate(`/disco/${salvo.idDisco}`)
+      navigate(`/disco/${salvo.idDisco ?? salvo.id_disco}`)
     } catch (e) {
       setErro(e.mensagem || 'Nao foi possivel abrir o disco.')
     }

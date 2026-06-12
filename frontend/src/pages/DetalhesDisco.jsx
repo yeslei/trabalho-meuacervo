@@ -62,6 +62,7 @@ export default function DetalhesDisco() {
   if (!dados) return <div className="alert alert-error">{erro || 'Disco nao encontrado.'}</div>
 
   const { disco, estatistica, reviews = [], faixas = [] } = dados
+  const capa = disco.imagemCapa || disco.imagem_capa
   const media = Number(estatistica?.mediaNotas || estatistica?.media || 0)
   const totalAvaliacoes = estatistica?.totalAvaliacoes || estatistica?.total || 0
 
@@ -72,8 +73,8 @@ export default function DetalhesDisco() {
 
       <section className="detalhes-container">
         <div>
-          {disco.imagemCapa
-            ? <img className="detalhes-cover" src={disco.imagemCapa} alt={disco.titulo} />
+          {capa
+            ? <img className="detalhes-cover" src={capa} alt={disco.titulo} />
             : <div className="detalhes-cover cover-placeholder"><i className="fa-solid fa-compact-disc" /></div>}
         </div>
 

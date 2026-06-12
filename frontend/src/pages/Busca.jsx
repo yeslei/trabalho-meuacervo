@@ -33,7 +33,7 @@ export default function Busca() {
         discogsId: disco.discogsId, titulo: disco.titulo, artista: disco.artista,
         genero: disco.genero, formato: disco.formato, capa: disco.imagemCapa, ano: disco.anoLancamento,
       })
-      navigate(`/disco/${salvo.idDisco}`)
+      navigate(`/disco/${salvo.idDisco ?? salvo.id_disco}`)
     } catch (e) { setErro(e.mensagem || 'Nao foi possivel abrir o disco.') }
   }
 

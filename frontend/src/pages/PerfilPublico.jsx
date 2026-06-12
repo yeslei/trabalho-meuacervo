@@ -13,6 +13,8 @@ export default function PerfilPublico() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
 
+  const capaDoDisco = (disco) => disco.imagemCapa || disco.imagem_capa
+
   useEffect(() => {
     setCarregando(true)
     setErro('')
@@ -90,7 +92,7 @@ export default function PerfilPublico() {
           <h2 className="section-heading">Colecao de {usuario.nome}<span className="count">{stats.totalDiscos} discos</span></h2>
           {perfil.colecao.length === 0
             ? <p className="empty-state">Este usuario ainda nao adicionou discos a colecao.</p>
-            : <div className="card-grid">{perfil.colecao.map((d) => <DiscoCard key={d.idDisco} disco={d} aoClicar={irParaDisco} />)}</div>}
+            : <div className="card-grid">{perfil.colecao.map((d) => <DiscoCard key={d.idDisco} disco={{ ...d, imagemCapa: capaDoDisco(d) }} aoClicar={irParaDisco} />)}</div>}
         </>
       )}
 
@@ -105,8 +107,8 @@ export default function PerfilPublico() {
                 key={i}
                 onClick={() => r.disco?.idDisco && navigate(`/disco/${r.disco.idDisco}`)}
               >
-                {r.disco?.imagemCapa
-                  ? <img className="review-cover" src={r.disco.imagemCapa} alt={r.disco.titulo} />
+                {capaDoDisco(r.disco || {})
+                  ? <img className="review-cover" src={capaDoDisco(r.disco || {})} alt={r.disco.titulo} />
                   : <div className="review-cover cover-placeholder"><i className="fa-solid fa-compact-disc" /></div>}
                 <div className="review-body">
                   <div className="review-header">
@@ -133,7 +135,7 @@ export default function PerfilPublico() {
           <h2 className="section-heading">Favoritos de {usuario.nome}<span className="count">{stats.totalFavoritos} favoritos</span></h2>
           {perfil.favoritos.length === 0
             ? <p className="empty-state">Este usuario ainda nao favoritou nenhum disco.</p>
-            : <div className="card-grid">{perfil.favoritos.map((d) => <DiscoCard key={d.idDisco} disco={d} aoClicar={irParaDisco} />)}</div>}
+            : <div className="card-grid">{perfil.favoritos.map((d) => <DiscoCard key={d.idDisco} disco={{ ...d, imagemCapa: capaDoDisco(d) }} aoClicar={irParaDisco} />)}</div>}
         </>
       )}
     </div>

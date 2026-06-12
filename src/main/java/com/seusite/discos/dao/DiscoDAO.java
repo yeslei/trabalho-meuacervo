@@ -103,6 +103,40 @@ public class DiscoDAO {
         }
     }
 
+    public void atualizar(Disco disco) throws SQLException {
+        String sql = """
+            UPDATE disco
+            SET discogs_id = ?, titulo = ?, artista = ?, ano_lancamento = ?, genero = ?, formato = ?, imagem_capa = ?
+            WHERE id_disco = ?
+            """;
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            if (disco.getDiscogsId() != null) {
+                stmt.setInt(1, disco.getDiscogsId());
+            } else {
+                stmt.setNull(1, java.sql.Types.INTEGER);
+            }
+
+            stmt.setString(2, disco.getTitulo());
+            stmt.setString(3, disco.getArtista());
+
+            if (disco.getAnoLancamento() != null) {
+                stmt.setInt(4, disco.getAnoLancamento());
+            } else {
+                stmt.setNull(4, java.sql.Types.INTEGER);
+            }
+
+            stmt.setString(5, disco.getGenero());
+            stmt.setString(6, disco.getFormato());
+            stmt.setString(7, disco.getImagemCapa());
+            stmt.setInt(8, disco.getIdDisco());
+
+            stmt.executeUpdate();
+        }
+    }
+
     //  Salva o disco novo e já devolve o ID gerado pelo Postgres
     public int salvar(Disco disco) throws SQLException {
         String sql = """

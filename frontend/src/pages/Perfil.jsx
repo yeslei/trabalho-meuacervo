@@ -28,6 +28,8 @@ export default function Perfil() {
   const [bio, setBio] = useState(usuario?.bio || '')
   const [salvandoBio, setSalvandoBio] = useState(false)
 
+  const capaDoDisco = (disco) => disco.imagemCapa || disco.imagem_capa
+
   const carregarPerfil = () => {
     setCarregando(true)
     Promise.all([colecaoService.minha(), wishlistService.minha(), avaliacaoService.meusReviews()])
@@ -212,8 +214,8 @@ export default function Perfil() {
               <div className="card-grid">
                 {colecao.map((d) => (
                   <article className="album-card album-card-detalhado" key={d.idDisco} onClick={() => irParaDisco(d)}>
-                    {d.imagemCapa
-                      ? <img className="album-cover" src={d.imagemCapa} alt={d.titulo} loading="lazy" />
+                    {capaDoDisco(d)
+                      ? <img className="album-cover" src={capaDoDisco(d)} alt={d.titulo} loading="lazy" />
                       : <div className="album-cover cover-placeholder"><i className="fa-solid fa-compact-disc" /></div>}
 
                     <div className="album-title">{d.titulo}</div>
@@ -281,8 +283,8 @@ export default function Perfil() {
                 key={i}
                 onClick={() => r.disco?.idDisco && navigate(`/disco/${r.disco.idDisco}`)}
               >
-                {r.disco?.imagemCapa
-                  ? <img className="review-cover" src={r.disco.imagemCapa} alt={r.disco.titulo} />
+                {capaDoDisco(r.disco || {})
+                  ? <img className="review-cover" src={capaDoDisco(r.disco || {})} alt={r.disco.titulo} />
                   : <div className="review-cover cover-placeholder"><i className="fa-solid fa-compact-disc" /></div>}
                 <div className="review-body">
                   <div className="review-header">
