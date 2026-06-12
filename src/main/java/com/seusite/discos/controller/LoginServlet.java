@@ -78,7 +78,7 @@ public class LoginServlet extends HttpServlet {
                 response.addCookie(cookieId);
             }
 
-            JsonUtil.ok(response, montarUsuarioPublico(usuario));
+            JsonUtil.ok(response, montarUsuarioPublico(usuario, session));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -95,6 +95,14 @@ public class LoginServlet extends HttpServlet {
         m.put("email", u.getEmail());
         m.put("username", u.getUsername());
         m.put("bio", u.getBio());
+        return m;
+    }
+
+    static Map<String, Object> montarUsuarioPublico(Usuario u, HttpSession session) {
+        Map<String, Object> m = montarUsuarioPublico(u);
+        if (session != null) {
+            m.put("sessionId", session.getId());
+        }
         return m;
     }
 }

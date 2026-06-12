@@ -42,7 +42,7 @@ public class MeServlet extends HttpServlet {
                     "nao-autenticado", "Nenhuma sessao ativa.");
             return;
         }
-        JsonUtil.ok(response, LoginServlet.montarUsuarioPublico(usuario));
+        JsonUtil.ok(response, LoginServlet.montarUsuarioPublico(usuario, session));
     }
 
     @Override
@@ -66,7 +66,7 @@ public class MeServlet extends HttpServlet {
         try {
             Usuario atualizado = authService.atualizarBio(usuario, dados.bio);
             session.setAttribute("usuarioLogado", atualizado);
-            JsonUtil.ok(response, LoginServlet.montarUsuarioPublico(atualizado));
+            JsonUtil.ok(response, LoginServlet.montarUsuarioPublico(atualizado, session));
         } catch (IllegalArgumentException e) {
             JsonUtil.erro(response, HttpServletResponse.SC_BAD_REQUEST,
                     "bio-longa", "A bio deve ter no maximo 280 caracteres.");

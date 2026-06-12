@@ -7,6 +7,7 @@ import { avaliacaoService } from '../services/avaliacaoService.js'
 import DiscoCard from '../components/DiscoCard.jsx'
 import StarRating from '../components/StarRating.jsx'
 import Loading from '../components/Loading.jsx'
+import { capaDoDisco } from '../utils/imagem.js'
 
 export default function Perfil() {
   const { usuario, atualizarPerfil } = useAuth()
@@ -27,8 +28,6 @@ export default function Perfil() {
   const [editandoBio, setEditandoBio] = useState(false)
   const [bio, setBio] = useState(usuario?.bio || '')
   const [salvandoBio, setSalvandoBio] = useState(false)
-
-  const capaDoDisco = (disco) => disco.imagemCapa || disco.imagem_capa
 
   const carregarPerfil = () => {
     setCarregando(true)

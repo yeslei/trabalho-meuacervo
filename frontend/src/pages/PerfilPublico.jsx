@@ -4,6 +4,7 @@ import { perfilPublicoService } from '../services/perfilPublicoService.js'
 import DiscoCard from '../components/DiscoCard.jsx'
 import StarRating from '../components/StarRating.jsx'
 import Loading from '../components/Loading.jsx'
+import { capaDoDisco } from '../utils/imagem.js'
 
 export default function PerfilPublico() {
   const { username } = useParams()
@@ -12,8 +13,6 @@ export default function PerfilPublico() {
   const [aba, setAba] = useState('colecao')
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
-
-  const capaDoDisco = (disco) => disco.imagemCapa || disco.imagem_capa
 
   useEffect(() => {
     setCarregando(true)

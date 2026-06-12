@@ -1,6 +1,8 @@
 // Card de disco reutilizavel (home, busca, colecao, favoritos).
+import { capaDoDisco } from '../utils/imagem.js'
+
 export default function DiscoCard({ disco, aoClicar }) {
-  const capa = disco.imagemCapa || disco.imagem_capa
+  const capa = capaDoDisco(disco)
 
   return (
     <article className="album-card" onClick={() => aoClicar?.(disco)}>

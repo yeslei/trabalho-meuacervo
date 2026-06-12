@@ -8,6 +8,7 @@ import StarRating from '../components/StarRating.jsx'
 import Button from '../components/Button.jsx'
 import Input from '../components/Input.jsx'
 import Loading from '../components/Loading.jsx'
+import { capaDoDisco } from '../utils/imagem.js'
 
 export default function DetalhesDisco() {
   const { idDisco } = useParams()
@@ -62,7 +63,7 @@ export default function DetalhesDisco() {
   if (!dados) return <div className="alert alert-error">{erro || 'Disco nao encontrado.'}</div>
 
   const { disco, estatistica, reviews = [], faixas = [] } = dados
-  const capa = disco.imagemCapa || disco.imagem_capa
+  const capa = capaDoDisco(disco)
   const media = Number(estatistica?.mediaNotas || estatistica?.media || 0)
   const totalAvaliacoes = estatistica?.totalAvaliacoes || estatistica?.total || 0
 

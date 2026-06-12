@@ -1,5 +1,44 @@
 import { API_URL } from '../config.js'
 
+const SESSION_STORAGE_KEY = 'meuacervo.sessionId'
+
+function sessionIdAtual() {
+  try {
+    return window.localStorage.getItem(SESSION_STORAGE_KEY)
+  } catch (e) {
+    return null
+  }
+}
+
+function salvarSessionId(sessionId) {
+  try {
+    if (sessionId) {
+      window.localStorage.setItem(SESSION_STORAGE_KEY, sessionId)
+    }
+  } catch (e) {
+    // localStorage pode estar indisponivel em navegadores mais restritos.
+  }
+}
+
+function limparSessionId() {
+  try {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY)
+  } catch (e) {
+    // Sem acao: o cookie de sessao ainda pode funcionar.
+  }
+}
+
+function caminhoComSessao(caminho) {
+  const sessionId = sessionIdAtual()
+  if (!sessionId || caminho === '/login' || caminho === '/cadastro') {
+    return caminho
+  }
+
+  const [pathname, query = ''] = caminho.split('?')
+  const sufixo = query ? `?${query}` : ''
+  return `;jsessionid=${encodeURIComponent(sessionId)}${pathname}${sufixo}`
+}
+
 /**
  * Cliente HTTP central da aplicacao.
  *
@@ -28,7 +67,7 @@ async function request(caminho, { method = 'GET', body, ...resto } = {}) {
 
   let resposta
   try {
-    resposta = await fetch(`${baseUrl}${caminho}`, opcoes)
+    resposta = await fetch(`${baseUrl}${caminhoComSessao(caminho)}`, opcoes)
   } catch (e) {
     const erro = new Error('Nao foi possivel conectar a API. O servidor esta no ar?')
     erro.codigo = 'sem-conexao'
@@ -60,10 +99,17 @@ async function request(caminho, { method = 'GET', body, ...resto } = {}) {
   }
 
   if (!resposta.ok) {
+    if (resposta.status === 401) {
+      limparSessionId()
+    }
     const erro = new Error(dados?.mensagem || 'Erro na requisicao.')
     erro.codigo = dados?.erro || 'erro'
     erro.status = resposta.status
     throw erro
+  }
+
+  if (dados?.sessionId) {
+    salvarSessionId(dados.sessionId)
   }
   return dados
 }
@@ -73,4 +119,5 @@ export const api = {
   post: (caminho, body) => request(caminho, { method: 'POST', body }),
   put: (caminho, body) => request(caminho, { method: 'PUT', body }),
   del: (caminho, body) => request(caminho, { method: 'DELETE', body }),
+  limparSessaoLocal: limparSessionId,
 }

@@ -73,7 +73,7 @@ public class CadastroServlet extends HttpServlet {
                 session.setAttribute("usuarioLogado", criado);
                 session.setMaxInactiveInterval(60 * 30);
                 JsonUtil.escreverJson(response, HttpServletResponse.SC_CREATED,
-                        LoginServlet.montarUsuarioPublico(criado));
+                        LoginServlet.montarUsuarioPublico(criado, session));
             } else {
                 JsonUtil.sucesso(response, "Cadastro realizado. Faca login.");
             }
