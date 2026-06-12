@@ -31,6 +31,7 @@ public class DiscogsService {
     private static final String API_URL = "https://api.discogs.com/database/search";
     private static final String API_URL2 = "https://api.discogs.com";
     private static final String USER_AGENT = "MeuAcervoApp/1.0";
+    private static final int MAX_CAPAS_FALLBACK = 18;
 
     public List<Disco> buscarDiscosPorTermo(String termo) throws Exception {
         return buscarDiscosPorTermo(termo, 1);
@@ -93,12 +94,15 @@ public class DiscogsService {
                     disco.setFormato(item.get("format").getAsJsonArray().get(0).getAsString());
                 }
 
-                if (item.has("cover_image") && !item.get("cover_image").isJsonNull()) {
-                    disco.setImagemCapa(item.get("cover_image").getAsString());
+                disco.setImagemCapa(extrairTexto(item, "cover_image"));
+                if (textoVazio(disco.getImagemCapa())) {
+                    disco.setImagemCapa(extrairTexto(item, "thumb"));
                 }
 
                 listaDiscos.add(disco);
             }
+
+            preencherCapasFaltantes(listaDiscos);
 
             int paginaAtual = paginaSolicitada;
             int totalPaginas = 1;
@@ -128,6 +132,54 @@ public class DiscogsService {
         } catch (Exception ignored) {
             return fallback;
         }
+    }
+
+    private String extrairTexto(JsonObject jsonObject, String key) {
+        if (jsonObject == null || !jsonObject.has(key) || jsonObject.get(key).isJsonNull()) {
+            return null;
+        }
+
+        String valor = jsonObject.get(key).getAsString();
+        return textoVazio(valor) ? null : valor;
+    }
+
+    private void preencherCapasFaltantes(List<Disco> discos) {
+        int tentativas = 0;
+        for (Disco disco : discos) {
+            if (!textoVazio(disco.getImagemCapa()) || disco.getDiscogsId() == null) {
+                continue;
+            }
+            if (tentativas >= MAX_CAPAS_FALLBACK) {
+                return;
+            }
+
+            try {
+                tentativas++;
+                String imagem = buscarImagemRelease(disco.getDiscogsId());
+                if (!textoVazio(imagem)) {
+                    disco.setImagemCapa(imagem);
+                }
+            } catch (Exception ignored) {
+                // A busca deve continuar mesmo quando uma capa especifica falhar.
+            }
+        }
+    }
+
+    private String buscarImagemRelease(int discogsId) throws Exception {
+        HttpResponse<String> response = consultarDiscogs(API_URL2 + "/releases/" + discogsId);
+        if (response.statusCode() != 200) {
+            return null;
+        }
+
+        JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
+        if (!jsonObject.has("images") || !jsonObject.get("images").isJsonArray()
+                || jsonObject.get("images").getAsJsonArray().isEmpty()) {
+            return null;
+        }
+
+        JsonObject primeiraImagem = jsonObject.get("images").getAsJsonArray().get(0).getAsJsonObject();
+        String imagem = extrairTexto(primeiraImagem, "uri");
+        return textoVazio(imagem) ? extrairTexto(primeiraImagem, "resource_url") : imagem;
     }
 
     public List<Faixa> buscarTracklist(int discogsId) throws Exception {
@@ -195,6 +247,10 @@ public class DiscogsService {
 
     private boolean tokenRecusado(int statusCode) {
         return statusCode == 401 || statusCode == 403;
+    }
+
+    private boolean textoVazio(String texto) {
+        return texto == null || texto.isBlank();
     }
 
     private String resumirCorpo(String body) {
