@@ -158,8 +158,16 @@ Para Supabase, use a string JDBC do banco com SSL:
 
 ```env
 DB_JDBC_URL=jdbc:postgresql://HOST:PORT/postgres?sslmode=require
-DB_USER=postgres.PROJECT_REF
+DB_USER=postgres
 DB_PASSWORD=SENHA_DO_BANCO
+```
+
+No Railway, voce tambem pode cadastrar uma unica variavel `DATABASE_URL` no
+formato `postgresql://...`. Se a senha tiver caracteres especiais, prefira usar
+`DB_JDBC_URL`, `DB_USER` e `DB_PASSWORD` separados:
+
+```env
+DATABASE_URL=postgresql://postgres:SENHA_DO_BANCO@HOST:5432/postgres
 ```
 
 No GitHub Pages, cadastre `VITE_API_URL` em **Settings > Secrets and variables >
