@@ -32,7 +32,7 @@ public class UsuarioDAO {
     // Método para buscar um usuário pelo email
     public Usuario buscarPorEmail(String email) throws SQLException {
         String sql = """
-            SELECT id_usuario, nome, email, senha, username, data_criacao
+            SELECT id_usuario, nome, email, senha, username, bio, data_criacao
             FROM usuario
             WHERE email = ?
         """;
@@ -51,6 +51,7 @@ public class UsuarioDAO {
                     usuario.setEmail(rs.getString("email"));
                     usuario.setSenha(rs.getString("senha"));
                     usuario.setUsername(rs.getString("username"));
+                    usuario.setBio(rs.getString("bio"));
                     usuario.setDataCriacao(rs.getTimestamp("data_criacao").toLocalDateTime());
 
                     return usuario;
@@ -78,7 +79,7 @@ public class UsuarioDAO {
     }
 
     public Usuario buscarPorId(int id) throws SQLException {
-        String sql = "SELECT id_usuario, nome, email, senha, username, data_criacao FROM usuario WHERE id_usuario = ?";
+        String sql = "SELECT id_usuario, nome, email, senha, username, bio, data_criacao FROM usuario WHERE id_usuario = ?";
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
@@ -90,6 +91,7 @@ public class UsuarioDAO {
                     usuario.setEmail(rs.getString("email"));
                     usuario.setSenha(rs.getString("senha"));
                     usuario.setUsername(rs.getString("username"));
+                    usuario.setBio(rs.getString("bio"));
                     if (rs.getTimestamp("data_criacao") != null) {
                         usuario.setDataCriacao(rs.getTimestamp("data_criacao").toLocalDateTime());
                     }
@@ -112,6 +114,18 @@ public class UsuarioDAO {
                 rs.next();
                 return rs.getInt(1) > 0;
             }
+        }
+    }
+
+    public void atualizarBio(int idUsuario, String bio) throws SQLException {
+        String sql = "UPDATE usuario SET bio = ? WHERE id_usuario = ?";
+
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, bio);
+            stmt.setInt(2, idUsuario);
+            stmt.executeUpdate();
         }
     }
 }

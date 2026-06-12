@@ -4,6 +4,7 @@ CREATE TABLE usuario (
     email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     username VARCHAR(15) UNIQUE,
+    bio VARCHAR(280),
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
