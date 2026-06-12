@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { colecaoService } from '../services/colecaoService.js'
 import { wishlistService } from '../services/wishlistService.js'
@@ -132,6 +132,11 @@ export default function Perfil() {
                 Editar bio
               </button>
             </>
+          )}
+          {usuario?.username && (
+            <Link className="btn-secondary perfil-edit-button" to={`/perfil/${usuario.username}`}>
+              Ver perfil publico
+            </Link>
           )}
         </div>
       </section>

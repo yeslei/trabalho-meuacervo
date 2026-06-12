@@ -789,6 +789,15 @@ img { display: block; max-width: 100%; }
   margin-bottom: .4rem;
 }
 
+.perfil-publico-label {
+  color: var(--primary-accent);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: .35rem;
+  text-transform: uppercase;
+}
+
 .perfil-meta {
   color: var(--secondary-text);
   font-size: .85rem;
