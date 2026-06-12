@@ -45,7 +45,9 @@ public class ItemColecaoDAO {
         List<Disco> discos = new ArrayList<>();
         
         String sql = """
-            SELECT d.id_disco, d.discogs_id, d.titulo, d.artista, d.ano_lancamento, d.genero, d.formato, d.imagem_capa
+            SELECT d.id_disco, d.discogs_id, d.titulo, d.artista, d.ano_lancamento,
+                   d.genero, d.formato, d.imagem_capa,
+                   ic.estado_conservacao, ic.observacao, ic.data_adicao
             FROM disco d
             INNER JOIN item_colecao ic ON d.id_disco = ic.id_disco
             WHERE ic.id_colecao = ?
@@ -72,10 +74,31 @@ public class ItemColecaoDAO {
                     d.setGenero(rs.getString("genero"));
                     d.setFormato(rs.getString("formato"));
                     d.setImagemCapa(rs.getString("imagem_capa"));
+                    d.setEstadoConservacao(rs.getString("estado_conservacao"));
+                    d.setObservacao(rs.getString("observacao"));
+                    if (rs.getTimestamp("data_adicao") != null) {
+                        d.setDataAdicao(rs.getTimestamp("data_adicao").toLocalDateTime());
+                    }
                     discos.add(d);
                 }
             }
         }
         return discos;
+    }
+
+    public void atualizarDetalhes(int idColecao, int idDisco, String estadoConservacao, String observacao) throws SQLException {
+        String sql = """
+            UPDATE item_colecao
+            SET estado_conservacao = ?, observacao = ?
+            WHERE id_colecao = ? AND id_disco = ?
+            """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, estadoConservacao);
+            stmt.setString(2, observacao);
+            stmt.setInt(3, idColecao);
+            stmt.setInt(4, idDisco);
+            stmt.executeUpdate();
+        }
     }
 }

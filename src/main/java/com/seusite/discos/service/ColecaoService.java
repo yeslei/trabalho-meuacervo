@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ColecaoService {
 
@@ -63,6 +65,42 @@ public class ColecaoService {
         }
     }
 
+    public List<Disco> listarDiscosDoUsuario(int idUsuario) throws Exception {
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            ColecaoDAO colecaoDAO = new ColecaoDAO(conn);
+            Colecao colecao = colecaoDAO.buscarPorUsuario(idUsuario);
+            if (colecao == null) {
+                return new ArrayList<>();
+            }
+
+            ItemColecaoDAO itemDAO = new ItemColecaoDAO(conn);
+            return itemDAO.listarDiscosDaColecao(colecao.getIdColecao());
+        }
+    }
+
+    public void atualizarDetalhesItem(int idUsuario, int idDisco, String estado, String observacao) throws Exception {
+        String estadoNormalizado = normalizarTexto(estado);
+        String observacaoNormalizada = normalizarTexto(observacao);
+
+        if (estadoNormalizado != null && estadoNormalizado.length() > 80) {
+            throw new IllegalArgumentException("estado-longo");
+        }
+        if (observacaoNormalizada != null && observacaoNormalizada.length() > 500) {
+            throw new IllegalArgumentException("observacao-longa");
+        }
+
+        try (Connection conn = ConnectionFactory.getConnection()) {
+            ColecaoDAO colecaoDAO = new ColecaoDAO(conn);
+            Colecao colecao = colecaoDAO.buscarPorUsuario(idUsuario);
+            if (colecao == null) {
+                throw new IllegalArgumentException("item-inexistente");
+            }
+
+            ItemColecaoDAO itemDAO = new ItemColecaoDAO(conn);
+            itemDAO.atualizarDetalhes(colecao.getIdColecao(), idDisco, estadoNormalizado, observacaoNormalizada);
+        }
+    }
+
     /** Remove disco da coleção do usuário. */
     public void removerDaColecaoUnica(int idUsuario, int idDisco) throws Exception {
         try (Connection conn = ConnectionFactory.getConnection()) {
@@ -105,5 +143,13 @@ public class ColecaoService {
                 return rs.next() ? rs.getInt(1) : 0;
             }
         }
+    }
+
+    private String normalizarTexto(String texto) {
+        if (texto == null) {
+            return null;
+        }
+        String normalizado = texto.trim();
+        return normalizado.isEmpty() ? null : normalizado;
     }
 }
