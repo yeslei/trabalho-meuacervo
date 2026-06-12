@@ -9,7 +9,7 @@ import StarRating from '../components/StarRating.jsx'
 import Loading from '../components/Loading.jsx'
 
 export default function Perfil() {
-  const { usuario } = useAuth()
+  const { usuario, atualizarPerfil } = useAuth()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const abaAtual = searchParams.get('aba')
@@ -20,6 +20,10 @@ export default function Perfil() {
   const [stats, setStats] = useState({ totalDiscos: 0, totalReviews: 0, totalFavoritos: 0 })
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
+  const [sucesso, setSucesso] = useState('')
+  const [editandoBio, setEditandoBio] = useState(false)
+  const [bio, setBio] = useState(usuario?.bio || '')
+  const [salvandoBio, setSalvandoBio] = useState(false)
 
   useEffect(() => {
     setCarregando(true)
@@ -39,6 +43,10 @@ export default function Perfil() {
   }, [])
 
   useEffect(() => {
+    setBio(usuario?.bio || '')
+  }, [usuario?.bio])
+
+  useEffect(() => {
     if (['colecao', 'reviews', 'favoritos'].includes(abaAtual)) {
       setAba(abaAtual)
     }
@@ -48,6 +56,22 @@ export default function Perfil() {
   const trocarAba = (proximaAba) => {
     setAba(proximaAba)
     setSearchParams({ aba: proximaAba })
+  }
+  const salvarBio = async (e) => {
+    e.preventDefault()
+    setErro('')
+    setSucesso('')
+    setSalvandoBio(true)
+
+    try {
+      await atualizarPerfil({ bio })
+      setEditandoBio(false)
+      setSucesso('Bio atualizada com sucesso.')
+    } catch (e) {
+      setErro(e.message || 'Nao foi possivel atualizar a bio.')
+    } finally {
+      setSalvandoBio(false)
+    }
   }
   const iniciais = (usuario?.nome || 'Usuario')
     .split(' ')
@@ -61,6 +85,7 @@ export default function Perfil() {
   return (
     <div>
       {erro && <div className="alert alert-error">{erro}</div>}
+      {sucesso && <div className="alert alert-success">{sucesso}</div>}
 
       <section className="perfil-header">
         <div className="perfil-avatar">{iniciais}</div>
@@ -71,7 +96,43 @@ export default function Perfil() {
             <span>•</span>
             <span>Membro</span>
           </div>
-          <p className="perfil-bio">Colecionador apaixonado por musica. Bem-vindo ao meu acervo!</p>
+          {editandoBio ? (
+            <form className="perfil-bio-form" onSubmit={salvarBio}>
+              <textarea
+                value={bio}
+                maxLength={280}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Conte um pouco sobre voce e seu acervo..."
+              />
+              <div className="perfil-bio-footer">
+                <span>{bio.length}/280</span>
+                <div className="perfil-bio-actions">
+                  <button
+                    className="btn-secondary"
+                    type="button"
+                    onClick={() => {
+                      setBio(usuario?.bio || '')
+                      setEditandoBio(false)
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button className="btn-primary" type="submit" disabled={salvandoBio}>
+                    {salvandoBio ? 'Salvando...' : 'Salvar bio'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <>
+              <p className="perfil-bio">
+                {usuario?.bio || 'Colecionador apaixonado por musica. Bem-vindo ao meu acervo!'}
+              </p>
+              <button className="btn-secondary perfil-edit-button" type="button" onClick={() => setEditandoBio(true)}>
+                Editar bio
+              </button>
+            </>
+          )}
           {usuario?.username && (
             <Link className="btn-secondary perfil-edit-button" to={`/perfil/${usuario.username}`}>
               Ver perfil publico

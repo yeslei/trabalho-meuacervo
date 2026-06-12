@@ -814,6 +814,43 @@ img { display: block; max-width: 100%; }
   margin-bottom: 1rem;
 }
 
+.perfil-bio-form {
+  max-width: 560px;
+}
+
+.perfil-bio-form textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: .75rem 1rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--primary-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.perfil-bio-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-accent);
+}
+
+.perfil-bio-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .6rem;
+  color: var(--secondary-text);
+  font-size: .8rem;
+}
+
+.perfil-bio-actions {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
 .perfil-edit-button {
   padding: .55rem 1rem;
 }

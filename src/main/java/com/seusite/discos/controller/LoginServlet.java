@@ -94,6 +94,7 @@ public class LoginServlet extends HttpServlet {
         m.put("nome", u.getNome());
         m.put("email", u.getEmail());
         m.put("username", u.getUsername());
+        m.put("bio", u.getBio());
         return m;
     }
 }
