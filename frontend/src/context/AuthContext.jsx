@@ -39,7 +39,13 @@ export function AuthProvider({ children }) {
     try { await authService.logout() } finally { setUsuario(null) }
   }, [])
 
-  const valor = { usuario, carregando, login, cadastrar, logout, autenticado: !!usuario }
+  const atualizarPerfil = useCallback(async (dados) => {
+    const u = await authService.atualizarPerfil(dados)
+    setUsuario(u)
+    return u
+  }, [])
+
+  const valor = { usuario, carregando, login, cadastrar, logout, atualizarPerfil, autenticado: !!usuario }
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
 }
 

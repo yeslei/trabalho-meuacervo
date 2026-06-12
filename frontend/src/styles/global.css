@@ -892,6 +892,15 @@ img { display: block; max-width: 100%; }
   margin-bottom: .4rem;
 }
 
+.perfil-publico-label {
+  color: var(--primary-accent);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: .35rem;
+  text-transform: uppercase;
+}
+
 .perfil-meta {
   color: var(--secondary-text);
   font-size: .85rem;
@@ -906,6 +915,47 @@ img { display: block; max-width: 100%; }
   font-size: .9rem;
   max-width: 500px;
   margin-bottom: 1rem;
+}
+
+.perfil-bio-form {
+  max-width: 560px;
+}
+
+.perfil-bio-form textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: .75rem 1rem;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--primary-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.perfil-bio-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-accent);
+}
+
+.perfil-bio-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .6rem;
+  color: var(--secondary-text);
+  font-size: .8rem;
+}
+
+.perfil-bio-actions {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+}
+
+.perfil-edit-button {
+  padding: .55rem 1rem;
 }
 
 .stats-grid {

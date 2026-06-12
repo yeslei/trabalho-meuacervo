@@ -6,6 +6,7 @@ import Home from '../pages/Home.jsx'
 import Busca from '../pages/Busca.jsx'
 import DetalhesDisco from '../pages/DetalhesDisco.jsx'
 import Perfil from '../pages/Perfil.jsx'
+import PerfilPublico from '../pages/PerfilPublico.jsx'
 
 // Arvore central de rotas (React Router).
 export default function AppRoutes() {
@@ -13,6 +14,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Cadastro />} />
+      <Route path="/perfil/:username" element={<PerfilPublico />} />
 
       <Route path="/" element={<RotaProtegida><Home /></RotaProtegida>} />
       <Route path="/busca" element={<RotaProtegida><Busca /></RotaProtegida>} />

@@ -5,4 +5,5 @@ export const authService = {
   cadastrar: (dados) => api.post('/cadastro', dados),
   logout: () => api.post('/logout'),
   eu: () => api.get('/api/me'),
+  atualizarPerfil: (dados) => api.put('/api/me', dados),
 }
