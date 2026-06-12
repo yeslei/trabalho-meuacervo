@@ -45,11 +45,17 @@ public class SessionCookieFilter extends HttpFilter {
                 return value;
             }
 
+            // Só adiciona SameSite=None quando tambem aplicaremos Secure. Alguns
+            // navegadores rejeitam ou ignoram cookies com SameSite=None sem Secure.
+            if (!deveUsarSecure()) {
+                return value;
+            }
+
             String cookie = value;
             if (!cookie.toLowerCase().contains("samesite=")) {
                 cookie += "; SameSite=None";
             }
-            if (deveUsarSecure() && !cookie.toLowerCase().contains("secure")) {
+            if (!cookie.toLowerCase().contains("secure")) {
                 cookie += "; Secure";
             }
             return cookie;
