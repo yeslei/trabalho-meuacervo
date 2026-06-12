@@ -53,8 +53,12 @@ public class AvaliarDiscoServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Usuario usuario = logado(request);
-        if (usuario == null) { JsonUtil.erro(response, 401, "nao-autenticado", "Faca login."); return; }
+        // GET é público: devolve detalhes do disco + estatisticas públicas + reviews.
+        // Dados privados (nota do usuario, flags de colecao/wishlist) só são preenchidos
+        // se houver sessao ativa; caso contrario retornam nulos/false.
+
+        HttpSession session = request.getSession(false);
+        Usuario usuario = session == null ? null : (Usuario) session.getAttribute("usuarioLogado");
 
         int idDisco;
         try { idDisco = Integer.parseInt(request.getParameter("id_disco").trim()); }
@@ -65,10 +69,17 @@ public class AvaliarDiscoServlet extends HttpServlet {
             if (disco == null) { JsonUtil.erro(response, 404, "disco-inexistente", "Disco nao encontrado."); return; }
 
             EstatisticaDisco estatistica = avaliacaoService.buscarEstatisticas(idDisco);
-            Integer notaUsuario = avaliacaoService.buscarNota(usuario.getIdUsuario(), idDisco);
+            Integer notaUsuario = null;
+            boolean estaNaColecao = false;
+            boolean estaNaWishlist = false;
+
+            if (usuario != null) {
+                notaUsuario = avaliacaoService.buscarNota(usuario.getIdUsuario(), idDisco);
+                estaNaColecao = colecaoService.possuiDisco(usuario.getIdUsuario(), idDisco);
+                estaNaWishlist = wishlistService.possuiDisco(usuario.getIdUsuario(), idDisco);
+            }
+
             List<AvaliacaoDisco> reviews = avaliacaoService.buscarReviews(idDisco);
-            boolean estaNaColecao = colecaoService.possuiDisco(usuario.getIdUsuario(), idDisco);
-            boolean estaNaWishlist = wishlistService.possuiDisco(usuario.getIdUsuario(), idDisco);
 
             List<Faixa> faixas = Collections.emptyList();
             if (disco.getDiscogsId() != null) {
